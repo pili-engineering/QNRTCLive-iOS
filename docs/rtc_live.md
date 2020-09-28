@@ -270,7 +270,7 @@ SDK 默认会进行自动订阅，订阅成功后将会收到如下回调：
 
 场景示意图如下：
 
-![单路流直播](http://docs.qnsdk.com/forward_job.jpg)
+![单路流直播](https://docs.qnsdk.com/forward_job.jpg)
 
 为了实现上述场景，您可以参考如下实现方式：
 
