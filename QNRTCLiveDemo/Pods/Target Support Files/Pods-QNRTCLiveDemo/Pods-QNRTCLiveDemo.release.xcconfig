@@ -1,0 +1,13 @@
+CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/HappyDNS" "${PODS_CONFIGURATION_BUILD_DIR}/MJRefresh" "${PODS_CONFIGURATION_BUILD_DIR}/Masonry" "${PODS_CONFIGURATION_BUILD_DIR}/jetfire" "${PODS_ROOT}/PLPlayerKit/Pod/Library" "${PODS_ROOT}/QNRTCKit/Pod/iphoneos" "${PODS_ROOT}/RongCloudIM/RongCloudIM"
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
+HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/HappyDNS/HappyDNS.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/MJRefresh/MJRefresh.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/Masonry/Masonry.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/jetfire/jetfire.framework/Headers"
+LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks'
+LIBRARY_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/RongCloudIM/RongCloudIM"
+OTHER_LDFLAGS = $(inherited) -ObjC -l"bz2" -l"c++" -l"iconv" -l"opencore-amrnb" -l"opencore-amrwb" -l"resolv" -l"sqlite3" -l"stdc++" -l"vo-amrwbenc" -l"z" -framework "AVFoundation" -framework "AVKit" -framework "Accelerate" -framework "AssetsLibrary" -framework "AudioToolbox" -framework "CFNetwork" -framework "CoreAudio" -framework "CoreGraphics" -framework "CoreLocation" -framework "CoreMedia" -framework "CoreTelephony" -framework "CoreVideo" -framework "Foundation" -framework "HappyDNS" -framework "ImageIO" -framework "MJRefresh" -framework "MapKit" -framework "Masonry" -framework "MediaPlayer" -framework "OpenGLES" -framework "PLPlayerKit" -framework "QNRTCKit" -framework "QuartzCore" -framework "RongIMKit" -framework "RongIMLib" -framework "SafariServices" -framework "SystemConfiguration" -framework "UIKit" -framework "VideoToolbox" -framework "WebKit" -framework "jetfire"
+PODS_BUILD_DIR = ${BUILD_DIR}
+PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
+PODS_PODFILE_DIR_PATH = ${SRCROOT}/.
+PODS_ROOT = ${SRCROOT}/Pods
+PODS_XCFRAMEWORKS_BUILD_DIR = $(PODS_CONFIGURATION_BUILD_DIR)/XCFrameworkIntermediates
+USE_RECURSIVE_SCRIPT_INPUTS_IN_SCRIPT_PHASES = YES

@@ -1,0 +1,6 @@
+framework module Pods_QNRTCLiveDemoTests {
+  umbrella header "Pods-QNRTCLiveDemoTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
