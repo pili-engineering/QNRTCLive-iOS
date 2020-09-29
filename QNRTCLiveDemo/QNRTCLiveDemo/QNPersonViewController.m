@@ -160,6 +160,9 @@ QNEditAlertViewDelegate
             }
         } error:^(NSError * _Nonnull error) {
             NSLog(@"QN_USER_EXIT error --- %@", error);
+            QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+            [sigleView showAlertViewTitle:[NSString stringWithFormat:@"用户注销失败 %ld", (long)error.code] bgView:self.view];
+
         }];
     }
     if (indexPath.section == 0) {
@@ -229,6 +232,8 @@ QNEditAlertViewDelegate
             }
         } error:^(NSError * _Nonnull error) {
             NSLog(@"QN_UPDATE_PROFILE error --- %@", error);
+            QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+            [sigleView showAlertViewTitle:[NSString stringWithFormat:@"更新用户信息失败 %ld", (long)error.code] bgView:self.view];
         }];
     }
 }

@@ -210,12 +210,13 @@ UITextFieldDelegate
         make.size.mas_equalTo(CGSizeMake(58, 21));
     }];
     [self.userAgentButton addTarget:self action:@selector(enterUserAgent) forControlEvents:UIControlEventTouchUpInside];
+    self.userAgentButton.selected = YES;
     
     UILabel *infolabel = [[UILabel alloc] init];
     infolabel.font = QN_FONT_REGULAR(14);
     infolabel.textColor = QN_COLOR_RGB(135, 135, 135, 1);
     infolabel.textAlignment = NSTextAlignmentCenter;
-    infolabel.text = @"登陆及表示同意";
+    infolabel.text = @"登录即表示同意";
     [infolabel sizeToFit];
     [agreementView addSubview:infolabel];
     [infolabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -290,14 +291,13 @@ UITextFieldDelegate
 }
 
 - (void)getCode {
+    QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
     if (self.phoneTextField.text.length == 0) {
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:@"请填写手机号码！" bgView:self.view];
         return;
     }
     
     if (self.phoneTextField.text.length < 11) {
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:@"请填写正确的手机号码！" bgView:self.view];
         return;
     }
@@ -305,12 +305,14 @@ UITextFieldDelegate
     [QNNetworkRequest requestWithUrl:QN_SEND_CODE(self.phoneTextField.text) requestType:QNRequestTypePost dic:nil header:nil success:^(NSDictionary * _Nonnull resultDic) {
         NSLog(@"QN_SEND_CODE resultDic --- %@", resultDic);
         if (resultDic.count == 0) {
+            [sigleView showAlertViewTitle:@"发送成功！" bgView:self.view];
             self.countNumber = 300;
             self.timer = [NSTimer timerWithTimeInterval:1 target:self selector:@selector(secondsCount) userInfo:nil repeats:YES];
             [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_SEND_CODE error --- %@", error);
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取验证码错误 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -346,6 +348,8 @@ UITextFieldDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_USE_CODE_LOGIN error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"用户登录失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 

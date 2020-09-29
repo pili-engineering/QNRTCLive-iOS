@@ -1250,6 +1250,8 @@ QNLiveSocketDelegate
                 }
             } error:^(NSError * _Nonnull error) {
                 NSLog(@"QN_GET_PK_ROOMS error --- %@", error);
+                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+                [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取可 PK 列表失败 %ld", (long)error.code] bgView:self.view];
             }];
         }
     }
@@ -1366,6 +1368,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_GET_CREATE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取创建列表失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1394,6 +1398,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_CREATE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"创建直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1422,6 +1428,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_REFRESH_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"刷新直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1430,6 +1438,8 @@ QNLiveSocketDelegate
         NSLog(@"QN_CLOSE_LIVE_ROOM resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_CLOSE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"关闭直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1438,6 +1448,8 @@ QNLiveSocketDelegate
         NSLog(@"QN_UPDATE_LIVE_PROFILE resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_UPDATE_LIVE_PROFILE error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"编辑直播间房间名失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1449,6 +1461,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_CREATE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
