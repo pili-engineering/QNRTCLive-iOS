@@ -290,6 +290,8 @@ RCChatRoomViewDelegate
         NSLog(@"QN_LEAVE_LIVE_ROOM resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_LEAVE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"离开直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -352,6 +354,8 @@ RCChatRoomViewDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_IM_USER_TOKEN error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
