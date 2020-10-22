@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface QNEditAlertView : UIView
 @property (nonatomic, assign) id<QNEditAlertViewDelegate> delegate;
-
+@property (nonatomic, strong) UITextField *textField;
 - (instancetype)initWithFrame:(CGRect)frame person:(BOOL)person title:(NSString *)title text:(NSString *)text;
 
 - (void)hideAlertView;

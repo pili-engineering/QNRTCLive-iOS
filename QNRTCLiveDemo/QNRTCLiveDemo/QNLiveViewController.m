@@ -276,7 +276,9 @@ QNLiveSocketDelegate
 -(void)endBackground {
     NSLog(@"live end background");
     if (self.engine) {
-        [self.engine startCapture];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.engine startCapture];
+        });
         RCChatroomSignal *endBackgroundMessage = [[RCChatroomSignal alloc]init];
         [endBackgroundMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
         endBackgroundMessage.signal = SIGNAL_STREAMER_BACK_TO_LIVING;
@@ -287,7 +289,9 @@ QNLiveSocketDelegate
 -(void)enterBackground {
     NSLog(@"live enter background");
     if (self.engine) {
-        [self.engine stopCapture];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.engine stopCapture];
+        });
         RCChatroomSignal *endBackgroundMessage = [[RCChatroomSignal alloc]init];
         [endBackgroundMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
         endBackgroundMessage.signal = SIGNAL_STREAMER_SWITCH_TO_BACKGROUND;
@@ -306,12 +310,14 @@ QNLiveSocketDelegate
     self.engine.delegate = self;
     
     // 3.设置相关配置
+    self.engine.sessionPreset = AVCaptureSessionPreset1280x720;
     // 视频帧率
     self.engine.videoFrameRate = 25;;
     // 设置统计信息回调的时间间隔，不设置的话，默认不会回调统计信息
 //    self.engine.statisticInterval = 5;
     // 打开 sdk 自带的美颜效果
     [self.engine setBeautifyModeOn:YES];
+    self.engine.encodeMirrorFrontFacing = YES;
     
     [self.renderBackgroundView addSubview:self.engine.previewView];
     
@@ -369,6 +375,7 @@ QNLiveSocketDelegate
             errorMessage = @"重新进入房间超时";
         }
         [self showAlertWithMessage:errorMessage title:@"错误" completionHandler:^{
+            [[NSNotificationCenter defaultCenter] removeObserver:self];
             [self dismissViewControllerAnimated:YES completion:nil];
         }];
     });
@@ -987,6 +994,7 @@ QNLiveSocketDelegate
     
     self.listButton = [[UIButton alloc] init];
     [_listButton setImage:[UIImage imageNamed:@"icon_Audience"] forState:UIControlStateNormal];
+    [self.listButton addTarget:self action:@selector(audienceAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_listButton];
 
     [_listButton mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -1171,6 +1179,17 @@ QNLiveSocketDelegate
     [self createLiveRoomAccordingSituation];
 }
 
+- (void)audienceAction:(UIButton *)listButton {
+    QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+    NSString *number = @"0";
+    if (![self.roomNumberLabel.text isEqualToString:@""]) {
+        number = self.roomNumberLabel.text;
+    }
+    NSString * audienceNote = [NSString stringWithFormat:@"当前观看人数: %@",number];
+    [sigleView showAlertViewTitle:audienceNote bgView:self.view];
+}
+
+
 - (void)commentAction:(UIButton *)beautyButton {
     if ([[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] isLogin]) {
         UITapGestureRecognizer *resetBottomTapGesture =[[UITapGestureRecognizer alloc]
@@ -1182,7 +1201,7 @@ QNLiveSocketDelegate
         [self.chatRoomView.inputBar  setInputBarStatus:RCCRBottomBarStatusKeyboard];
         self.chatRoomView.isSendDanmaku = NO;
     } else {
-        
+        NSLog(@"IM 未登录！");
     }
 }
 
@@ -1219,12 +1238,11 @@ QNLiveSocketDelegate
     RCChatroomUserQuit *quitChatroomMessage = [[RCChatroomUserQuit alloc]init];
             [quitChatroomMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
     [self.chatRoomView sendMessage:quitChatroomMessage pushContent:nil success:nil error:nil];
-    [self getback];
-    
 
     [self.chatRoomView removeFromSuperview];
-    
     [self.socket disconnect];
+    
+    [self getback];
 }
 
 - (void)enterPKView {
@@ -1250,6 +1268,8 @@ QNLiveSocketDelegate
                 }
             } error:^(NSError * _Nonnull error) {
                 NSLog(@"QN_GET_PK_ROOMS error --- %@", error);
+                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+                [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取可 PK 列表失败 %ld", (long)error.code] bgView:self.view];
             }];
         }
     }
@@ -1272,8 +1292,8 @@ QNLiveSocketDelegate
         self.liveState = 0;
         [self.engine leaveRoom];
         [self closeLiveRoom];
-        
     }
+    self.engine = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -1281,8 +1301,10 @@ QNLiveSocketDelegate
 - (void)stopPKState:(UIButton *)button {
     [self hideAllUIView];
     if (self.isAdmin) {
+        NSLog(@"stopPKState: %@", self.roomId);
         [self.socket endPK:self.roomId];
     } else{
+        NSLog(@"stopPKState: %@", self.pkRoomId);
         [self.socket endPK:self.pkRoomId];
     }
 }
@@ -1295,13 +1317,14 @@ QNLiveSocketDelegate
         [_pkNotifyView hideAlertView];
         BOOL accept;
         if (titleIndex == 1) {
+            self.liveState = 2;
             accept = YES;
         } else{
+            self.liveState = 1;
             accept = NO;
         }
         [self.socket replyPK:_pkNotifyView.roomId accept:accept];
         [self.engine stopForwardJobWithJobId:self.jobId];
-        self.liveState = 2;
         self.pkButton.selected = YES;
     }
 }
@@ -1366,6 +1389,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_GET_CREATE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取创建列表失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1394,6 +1419,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_CREATE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"创建直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1422,6 +1449,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_REFRESH_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"刷新直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1430,6 +1459,8 @@ QNLiveSocketDelegate
         NSLog(@"QN_CLOSE_LIVE_ROOM resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_CLOSE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"关闭直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1438,6 +1469,8 @@ QNLiveSocketDelegate
         NSLog(@"QN_UPDATE_LIVE_PROFILE resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_UPDATE_LIVE_PROFILE error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"编辑直播间房间名失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1449,6 +1482,8 @@ QNLiveSocketDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_CREATE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -1661,6 +1696,7 @@ QNLiveSocketDelegate
         BOOL accept = [dic[@"accepted"] boolValue];
         if (!accept) {
             self.resultAlertView = [[QNPKAlertView alloc] initWithFrame:CGRectMake(0, 0, 300, 200) request:NO content:@"主播拒绝了你的 PK 请求"];
+            self.liveState = 1;
             self.resultAlertView.center = self.view.center;
             [self.view addSubview:_resultAlertView];
         } else{
@@ -1674,7 +1710,7 @@ QNLiveSocketDelegate
             self.pkButton.selected = YES;
             [self.engine leaveRoom];
             self.pkToken = dic[@"rtcRoomToken"];
-            self.pkRoomId = dic[@"pkRoomID"];
+            self.pkRoomId = dic[@"rtcRoom"];
             // 进入 PK 主播间
             [self.engine joinRoomWithToken:self.pkToken];
         }

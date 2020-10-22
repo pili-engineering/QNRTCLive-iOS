@@ -5,4 +5,5 @@ ${BUILT_PRODUCTS_DIR}/Masonry/Masonry.framework
 ${PODS_ROOT}/PLPlayerKit/Pod/Library/PLPlayerKit.framework
 ${PODS_ROOT}/QNRTCKit/Pod/iphoneos/HappyDNS.framework
 ${PODS_ROOT}/QNRTCKit/Pod/iphoneos/QNRTCKit.framework
+${BUILT_PRODUCTS_DIR}/Qiniu/Qiniu.framework
 ${BUILT_PRODUCTS_DIR}/jetfire/jetfire.framework

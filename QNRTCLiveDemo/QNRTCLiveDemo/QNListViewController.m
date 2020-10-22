@@ -22,7 +22,7 @@ UITableViewDataSource
 @property (nonatomic, strong) UITableView *listTableView;
 @property (nonatomic, strong) NSMutableArray *listArray;
 @property (nonatomic, strong) MJRefreshGifHeader *header;
-
+@property (nonatomic, strong) UIButton *tintButton;
 @end
 
 @implementation QNListViewController
@@ -35,6 +35,8 @@ UITableViewDataSource
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    self.view.backgroundColor = [UIColor whiteColor];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateListView:) name:@"updateListView" object:nil];
     
     CGFloat navigationHeight = 64;
@@ -43,7 +45,20 @@ UITableViewDataSource
         navigationHeight = 88;
         space = 20;
     }
-    
+        
+    self.tintButton = [[UIButton alloc] init];
+    self.tintButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.tintButton.titleLabel.font = QN_FONT_REGULAR(15.0);
+    [self.tintButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    [self.tintButton setTitle:@"没有在直播的直播间，点我刷新！" forState:UIControlStateNormal];
+    [self.tintButton addTarget:self action:@selector(refreshListViewData) forControlEvents:UIControlEventTouchUpInside];
+    [self.tintButton sizeToFit];
+    [self.view addSubview:_tintButton];
+    [self.tintButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.mas_equalTo(self.view.mas_centerX);
+        make.centerY.mas_equalTo(self.view.mas_centerY);
+    }];
+        
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, QN_KSCREEN_WIDTH, navigationHeight)];
     headerView.backgroundColor = QN_COLOR_RGB(30, 139, 255, 1);
     [self.view addSubview:headerView];
@@ -67,6 +82,7 @@ UITableViewDataSource
     self.header.lastUpdatedTimeLabel.textColor = [UIColor blackColor];
    
     _listTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, navigationHeight, QN_KSCREEN_WIDTH, QN_KSCREEN_HEIGHT - navigationHeight) style:UITableViewStylePlain];
+    _listTableView.backgroundColor = [UIColor whiteColor];
     _listTableView.delegate = self;
     _listTableView.dataSource = self;
     [_listTableView registerClass:[QNPlayerListTableViewCell class] forCellReuseIdentifier:cellIdentifier];
@@ -79,7 +95,7 @@ UITableViewDataSource
 
 - (void)refreshListViewData {
     NSDictionary *dic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
-       
+    [self.listTableView.mj_header endRefreshing];
     [QNNetworkRequest requestWithUrl:QN_GET_LIVE_ROOMS requestType:QNRequestTypeGet dic:nil header:[NSString stringWithFormat:@"Bearer %@", dic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
         NSLog(@"QN_GET_LIVE_ROOMS resultDic --- %@", resultDic);
         if ([resultDic.allKeys containsObject:@"rooms"]) {
@@ -87,8 +103,18 @@ UITableViewDataSource
             if ([resultDic[@"rooms"] isKindOfClass:[NSArray class]]) {
                 array = resultDic[@"rooms"];
             }
-            self.listArray = [NSMutableArray arrayWithArray:array];
-            [self.listTableView reloadData];
+            if (array.count == 0) {
+                self.listTableView.hidden = YES;
+                self.tintButton.hidden = NO;
+                
+                QNSigleAlertView *alertView = [[QNSigleAlertView alloc] init];
+                [alertView showAlertViewTitle:@"没有正在直播的直播间" bgView:self.view];
+            } else {
+                self.listTableView.hidden = NO;
+                self.tintButton.hidden = YES;
+                self.listArray = [NSMutableArray arrayWithArray:array];
+                [self.listTableView reloadData];
+            }
         } else {
             if ([resultDic[@"code"] longValue] == 401003) {
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"QN_USER_INFOMATION"];
@@ -102,9 +128,10 @@ UITableViewDataSource
                 }
             }
         }
-        [self.listTableView.mj_header endRefreshing];
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_GET_LIVE_ROOMS error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取直播列表失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -143,11 +170,15 @@ UITableViewDataSource
             [self presentViewController:playerViewController animated:YES completion:nil];
         } else {
             if ([resultDic[@"code"] longValue] == 404002) {
+                QNSigleAlertView *alertView = [[QNSigleAlertView alloc] init];
+                [alertView showAlertViewTitle:@"该直播房间已关闭，列表刷新啦～" bgView:self.view];
                 [self refreshListViewData];
             }
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_ENTER_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"进入直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 

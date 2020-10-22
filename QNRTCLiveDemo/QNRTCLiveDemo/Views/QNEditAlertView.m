@@ -20,7 +20,6 @@ UITextFieldDelegate
 @property (nonatomic, strong) UIButton *sureButton;
 
 @property (nonatomic, strong) UILabel *nameLabel;
-@property (nonatomic, strong) UITextField *textField;
 
 @property (nonatomic, strong) UILabel *genderLabel;
 @property (nonatomic, strong) UIButton *maleButton;

@@ -40,6 +40,14 @@
 		9CA24BEC250A2766001186D6 /* RCCRGiftNumberLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24BCC250A2766001186D6 /* RCCRGiftNumberLabel.m */; };
 		9CA24BED250A2766001186D6 /* RCCRGiftListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24BCF250A2766001186D6 /* RCCRGiftListView.m */; };
 		AA09F8EB2518842700DBD692 /* QNEditAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA09F8EA2518842700DBD692 /* QNEditAlertView.m */; };
+		AA89D4B0253445FE007E8128 /* QNAddCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AA89D4AF253445FE007E8128 /* QNAddCollectionViewCell.m */; };
+		AA89D543253487B6007E8128 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = AA89D539253487B6007E8128 /* unzip.c */; };
+		AA89D544253487B6007E8128 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = AA89D53A253487B6007E8128 /* zip.c */; };
+		AA89D545253487B6007E8128 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AA89D53B253487B6007E8128 /* ioapi.c */; };
+		AA89D546253487B6007E8128 /* mztools.c in Sources */ = {isa = PBXBuildFile; fileRef = AA89D53C253487B6007E8128 /* mztools.c */; };
+		AA89D547253487B7007E8128 /* ZipArchive.mm in Sources */ = {isa = PBXBuildFile; fileRef = AA89D542253487B6007E8128 /* ZipArchive.mm */; };
+		AA89D55925349352007E8128 /* libz.1.2.11.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AA89D55825349352007E8128 /* libz.1.2.11.tbd */; };
+		AA89D590253579CC007E8128 /* QNCircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA89D58E253579CC007E8128 /* QNCircleView.m */; };
 		AA8BC64A251AE88F000D7A28 /* user_agent.html in Resources */ = {isa = PBXBuildFile; fileRef = AA8BC646251AE88F000D7A28 /* user_agent.html */; };
 		AA911755250E221D006A538C /* QNSetTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AA911754250E221D006A538C /* QNSetTableViewCell.m */; };
 		AA91175B250F6C91006A538C /* QNPlayerListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AA91175A250F6C91006A538C /* QNPlayerListTableViewCell.m */; };
@@ -90,6 +98,7 @@
 		AACFC229251C8FCE00CDC26E /* img_default_live_cover.png in Resources */ = {isa = PBXBuildFile; fileRef = AACFC225251C8FCE00CDC26E /* img_default_live_cover.png */; };
 		AACFC231251CB16900CDC26E /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = AACFC22D251CB16900CDC26E /* logo.png */; };
 		AACFC24A251DE66500CDC26E /* QNReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = AACFC249251DE66500CDC26E /* QNReachability.m */; };
+		AAF36E8E2530087A00DDF89D /* QNFeedbackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF36E8D2530087A00DDF89D /* QNFeedbackViewController.m */; };
 		AAF9D17C250776D9000254AF /* QNNetworkRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D17B250776D9000254AF /* QNNetworkRequest.m */; };
 		AAF9D17F25077F9B000254AF /* QNRoomUserView.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D17E25077F9B000254AF /* QNRoomUserView.m */; };
 		AAF9D186250A2F18000254AF /* QNPKUserListView.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D185250A2F18000254AF /* QNPKUserListView.m */; };
@@ -189,6 +198,25 @@
 		9CA24BD0250A2766001186D6 /* RCCRGiftNumberLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCRGiftNumberLabel.h; sourceTree = "<group>"; };
 		AA09F8E92518842700DBD692 /* QNEditAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNEditAlertView.h; sourceTree = "<group>"; };
 		AA09F8EA2518842700DBD692 /* QNEditAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNEditAlertView.m; sourceTree = "<group>"; };
+		AA89D4AE253445FE007E8128 /* QNAddCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNAddCollectionViewCell.h; sourceTree = "<group>"; };
+		AA89D4AF253445FE007E8128 /* QNAddCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNAddCollectionViewCell.m; sourceTree = "<group>"; };
+		AA89D5332534879C007E8128 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		AA89D537253487B6007E8128 /* ZipArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipArchive.h; sourceTree = "<group>"; };
+		AA89D539253487B6007E8128 /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
+		AA89D53A253487B6007E8128 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
+		AA89D53B253487B6007E8128 /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
+		AA89D53C253487B6007E8128 /* mztools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mztools.c; sourceTree = "<group>"; };
+		AA89D53D253487B6007E8128 /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
+		AA89D53E253487B6007E8128 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
+		AA89D53F253487B6007E8128 /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
+		AA89D540253487B6007E8128 /* mztools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mztools.h; sourceTree = "<group>"; };
+		AA89D541253487B6007E8128 /* ioapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
+		AA89D542253487B6007E8128 /* ZipArchive.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZipArchive.mm; sourceTree = "<group>"; };
+		AA89D55825349352007E8128 /* libz.1.2.11.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.11.tbd; path = usr/lib/libz.1.2.11.tbd; sourceTree = SDKROOT; };
+		AA89D568253493DF007E8128 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		AA89D56A253493ED007E8128 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		AA89D58E253579CC007E8128 /* QNCircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QNCircleView.m; sourceTree = "<group>"; };
+		AA89D58F253579CC007E8128 /* QNCircleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QNCircleView.h; sourceTree = "<group>"; };
 		AA8BC646251AE88F000D7A28 /* user_agent.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = user_agent.html; sourceTree = "<group>"; };
 		AA911753250E221D006A538C /* QNSetTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNSetTableViewCell.h; sourceTree = "<group>"; };
 		AA911754250E221D006A538C /* QNSetTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNSetTableViewCell.m; sourceTree = "<group>"; };
@@ -282,6 +310,8 @@
 		AACFC22D251CB16900CDC26E /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		AACFC245251DE66500CDC26E /* QNReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QNReachability.h; sourceTree = "<group>"; };
 		AACFC249251DE66500CDC26E /* QNReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QNReachability.m; sourceTree = "<group>"; };
+		AAF36E8C2530087A00DDF89D /* QNFeedbackViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNFeedbackViewController.h; sourceTree = "<group>"; };
+		AAF36E8D2530087A00DDF89D /* QNFeedbackViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNFeedbackViewController.m; sourceTree = "<group>"; };
 		AAF9D17A250776D9000254AF /* QNNetworkRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNNetworkRequest.h; sourceTree = "<group>"; };
 		AAF9D17B250776D9000254AF /* QNNetworkRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNNetworkRequest.m; sourceTree = "<group>"; };
 		AAF9D17D25077F9B000254AF /* QNRoomUserView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNRoomUserView.h; sourceTree = "<group>"; };
@@ -304,6 +334,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA89D55925349352007E8128 /* libz.1.2.11.tbd in Frameworks */,
 				AA9117AF250F8298006A538C /* GLKit.framework in Frameworks */,
 				35413278F12394C2E657BF14 /* Pods_QNRTCLiveDemo.framework in Frameworks */,
 				AA91179E250F81B4006A538C /* PLSEffect.framework in Frameworks */,
@@ -336,6 +367,10 @@
 		8A42E6442E4EA776D532EBA1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AA89D56A253493ED007E8128 /* UIKit.framework */,
+				AA89D568253493DF007E8128 /* AVFoundation.framework */,
+				AA89D55825349352007E8128 /* libz.1.2.11.tbd */,
+				AA89D5332534879C007E8128 /* libz.tbd */,
 				AA9117AE250F8298006A538C /* GLKit.framework */,
 				F7CACD1CD4A2D74DFC564751 /* Pods_QNRTCLiveDemo.framework */,
 				879BC929DF1DF3835765C07F /* Pods_QNRTCLiveDemoTests.framework */,
@@ -491,6 +526,32 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		AA89D536253487B6007E8128 /* ZipArchive */ = {
+			isa = PBXGroup;
+			children = (
+				AA89D537253487B6007E8128 /* ZipArchive.h */,
+				AA89D542253487B6007E8128 /* ZipArchive.mm */,
+				AA89D538253487B6007E8128 /* minizip */,
+			);
+			path = ZipArchive;
+			sourceTree = "<group>";
+		};
+		AA89D538253487B6007E8128 /* minizip */ = {
+			isa = PBXGroup;
+			children = (
+				AA89D539253487B6007E8128 /* unzip.c */,
+				AA89D53A253487B6007E8128 /* zip.c */,
+				AA89D53B253487B6007E8128 /* ioapi.c */,
+				AA89D53C253487B6007E8128 /* mztools.c */,
+				AA89D53D253487B6007E8128 /* crypt.h */,
+				AA89D53E253487B6007E8128 /* zip.h */,
+				AA89D53F253487B6007E8128 /* unzip.h */,
+				AA89D540253487B6007E8128 /* mztools.h */,
+				AA89D541253487B6007E8128 /* ioapi.h */,
+			);
+			path = minizip;
+			sourceTree = "<group>";
+		};
 		AA911761250F81B3006A538C /* Effects */ = {
 			isa = PBXGroup;
 			children = (
@@ -623,6 +684,8 @@
 				AAA3EAB9250643D6000E7BCE /* QNPersonViewController.m */,
 				AAA3EAB525064348000E7BCE /* QNPlayerViewController.h */,
 				AAA3EAB625064348000E7BCE /* QNPlayerViewController.m */,
+				AAF36E8C2530087A00DDF89D /* QNFeedbackViewController.h */,
+				AAF36E8D2530087A00DDF89D /* QNFeedbackViewController.m */,
 				AA9117C22511E8B0006A538C /* QNWebViewController.h */,
 				AA9117C32511E8B0006A538C /* QNWebViewController.m */,
 				9CA24B8D250A2765001186D6 /* chatRoom */,
@@ -672,6 +735,8 @@
 				AA911754250E221D006A538C /* QNSetTableViewCell.m */,
 				AA911759250F6C91006A538C /* QNPlayerListTableViewCell.h */,
 				AA91175A250F6C91006A538C /* QNPlayerListTableViewCell.m */,
+				AA89D4AE253445FE007E8128 /* QNAddCollectionViewCell.h */,
+				AA89D4AF253445FE007E8128 /* QNAddCollectionViewCell.m */,
 				AAF9D190250A373A000254AF /* QNPKAlertView.h */,
 				AAF9D191250A373A000254AF /* QNPKAlertView.m */,
 				AA9117B32510A0B1006A538C /* QNMyTableViewCell.h */,
@@ -687,10 +752,13 @@
 		AAF9D179250776A1000254AF /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				AA89D58F253579CC007E8128 /* QNCircleView.h */,
+				AA89D58E253579CC007E8128 /* QNCircleView.m */,
 				AAF9D17A250776D9000254AF /* QNNetworkRequest.h */,
 				AAF9D17B250776D9000254AF /* QNNetworkRequest.m */,
 				AACFC245251DE66500CDC26E /* QNReachability.h */,
 				AACFC249251DE66500CDC26E /* QNReachability.m */,
+				AA89D536253487B6007E8128 /* ZipArchive */,
 			);
 			path = Tools;
 			sourceTree = "<group>";
@@ -763,6 +831,10 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				"zh-Hans",
+				ja,
+				es,
 			);
 			mainGroup = AAA3EA3925061859000E7BCE;
 			productRefGroup = AAA3EA4325061859000E7BCE /* Products */;
@@ -903,6 +975,7 @@
 				AAA3EA4725061859000E7BCE /* QNAppDelegate.m in Sources */,
 				AA9117A3250F81B4006A538C /* BECategoryView.m in Sources */,
 				9CA24BE8250A2766001186D6 /* RCCRLiveModel.m in Sources */,
+				AA89D546253487B6007E8128 /* mztools.c in Sources */,
 				AAA3EAB425064217000E7BCE /* QNListViewController.m in Sources */,
 				AA9117A7250F81B4006A538C /* BETextSliderView.m in Sources */,
 				AAF9D17F25077F9B000254AF /* QNRoomUserView.m in Sources */,
@@ -912,7 +985,9 @@
 				9CA24BDE250A2766001186D6 /* RCChatroomNotification.m in Sources */,
 				9CA24BD8250A2766001186D6 /* RCChatroomWelcome.m in Sources */,
 				9CA24BDF250A2766001186D6 /* RCChatroomUserQuit.m in Sources */,
+				AA89D547253487B7007E8128 /* ZipArchive.mm in Sources */,
 				AA91179F250F81B4006A538C /* BEButtonItemModel.m in Sources */,
+				AA89D4B0253445FE007E8128 /* QNAddCollectionViewCell.m in Sources */,
 				9CA24BD6250A2766001186D6 /* RCChatroomBarrage.m in Sources */,
 				9CA24BDA250A2766001186D6 /* RCChatroomLike.m in Sources */,
 				AAF9D17C250776D9000254AF /* QNNetworkRequest.m in Sources */,
@@ -936,6 +1011,7 @@
 				AA9117A2250F81B4006A538C /* BEEffectSwitchTabView.m in Sources */,
 				9CA24BE5250A2766001186D6 /* RCCRRongCloudIMManager.m in Sources */,
 				AA9117A0250F81B4006A538C /* BEEffectResponseModel.m in Sources */,
+				AA89D545253487B6007E8128 /* ioapi.c in Sources */,
 				AAA3EA7725062279000E7BCE /* QNHomeViewController.m in Sources */,
 				AAA3EABA250643D6000E7BCE /* QNPersonViewController.m in Sources */,
 				9CA24BDC250A2766001186D6 /* RCCRMessageBaseCell.m in Sources */,
@@ -951,9 +1027,12 @@
 				AAA3EA582506185E000E7BCE /* main.m in Sources */,
 				AAF9D192250A373A000254AF /* QNPKAlertView.m in Sources */,
 				AA9117A6250F81B4006A538C /* BEModernStickerPickerView.m in Sources */,
+				AA89D590253579CC007E8128 /* QNCircleView.m in Sources */,
 				AAA3EAB725064348000E7BCE /* QNPlayerViewController.m in Sources */,
 				AAA3EA7425062264000E7BCE /* QNLoginViewController.m in Sources */,
 				AA91179B250F81B4006A538C /* BEModernFilterCollectionViewCell.m in Sources */,
+				AAF36E8E2530087A00DDF89D /* QNFeedbackViewController.m in Sources */,
+				AA89D543253487B6007E8128 /* unzip.c in Sources */,
 				9CA24BD2250A2766001186D6 /* RCCRInputView.m in Sources */,
 				9CA24BEA250A2766001186D6 /* RCCRGiftModel.m in Sources */,
 				AA9117A4250F81B4006A538C /* BEModernFilterPickerView.m in Sources */,
@@ -962,6 +1041,7 @@
 				9CA24BD4250A2766001186D6 /* RCCREmojiBoardView.m in Sources */,
 				9CA24BE7250A2766001186D6 /* RCCRMessageModel.m in Sources */,
 				9CA24BD3250A2766001186D6 /* RCCREmojiCollectionCell.m in Sources */,
+				AA89D544253487B6007E8128 /* zip.c in Sources */,
 				9CA24BEB250A2766001186D6 /* RCCRGiftCollectionViewCell.m in Sources */,
 				9CA24BEC250A2766001186D6 /* RCCRGiftNumberLabel.m in Sources */,
 			);
@@ -1122,7 +1202,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GDFHW66V92;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1140,6 +1220,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/QNRTCLiveDemo/Effects",
 				);
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qbox.QNRTCLiveDemo;
 				PRODUCT_NAME = "牛互动";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1154,7 +1235,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GDFHW66V92;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1172,6 +1253,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/QNRTCLiveDemo/Effects",
 				);
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qbox.QNRTCLiveDemo;
 				PRODUCT_NAME = "牛互动";
 				PROVISIONING_PROFILE_SPECIFIER = "";

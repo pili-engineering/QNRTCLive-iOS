@@ -82,12 +82,14 @@ UITabBarDelegate
     QNListViewController *listViewController = [[QNListViewController alloc]init];
     listViewController.tabBarItem.title = @"首页";
     listViewController.tabBarItem.tag = 0;
+    [listViewController.tabBarItem setTitlePositionAdjustment:UIOffsetMake(0,-10)];
     [listViewController.tabBarItem setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont fontWithName:@"Helvetica" size:18.0f],NSFontAttributeName,nil] forState:UIControlStateNormal];
 
     // 我的
     QNPersonViewController *personViewController = [[QNPersonViewController alloc]init];
     personViewController.tabBarItem.title = @"我的";
     personViewController.tabBarItem.tag = 1;
+    [personViewController.tabBarItem setTitlePositionAdjustment:UIOffsetMake(0,-10)];
     [personViewController.tabBarItem setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont fontWithName:@"Helvetica" size:18.0f],NSFontAttributeName,nil] forState:UIControlStateNormal];
    
     self.viewControllers = @[listViewController, personViewController];
