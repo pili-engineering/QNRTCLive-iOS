@@ -57,6 +57,7 @@ RCChatRoomViewDelegate
 @property (nonatomic, strong) UIImageView *backImage;
 
 @property (nonatomic, strong) QNReachability *reachability;
+@property (nonatomic, assign) BOOL isPK;
 
 @end
 
@@ -231,6 +232,7 @@ RCChatRoomViewDelegate
     
     self.listButton = [[UIButton alloc] init];
     [_listButton setImage:[UIImage imageNamed:@"icon_Audience"] forState:UIControlStateNormal];
+    [self.listButton addTarget:self action:@selector(audienceAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_listButton];
 
     [_listButton mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -290,8 +292,22 @@ RCChatRoomViewDelegate
         NSLog(@"QN_LEAVE_LIVE_ROOM resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_LEAVE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"离开直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
+
+- (void)audienceAction:(UIButton *)listButton {
+    QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+    NSString *number = @"0";
+    if (![self.roomNumberLabel.text isEqualToString:@""]) {
+        number = self.roomNumberLabel.text;
+    }
+    NSString * audienceNote = [NSString stringWithFormat:@"当前观看人数: %@",number];
+    [sigleView showAlertViewTitle:audienceNote bgView:self.view];
+}
+
+
 
 - (void)updateAudienceCount {
     [QNNetworkRequest requestWithUrl:QN_LIVE_ROOMID(self.dic[@"roomID"]) requestType:QNRequestTypeGet dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
@@ -304,13 +320,27 @@ RCChatRoomViewDelegate
             } else{
                 self.roomNumberLabel.text = [NSString stringWithFormat:@"%@", resultDic[@"audienceNumber"]];
             }
+            if ([resultDic.allKeys containsObject:@"status"]) {
+                if ([resultDic[@"status"] isEqualToString:@"PK"]) {
+                    self.isPK = YES;
+                }else {
+                    self.isPK = NO;
+                }
+            }
+            
+            
         } else {
             if ([resultDic[@"code"] longValue] == 404002) {
-                NSString *message = @"房间已关闭，直播结束啦！";
-                NSString *title = @"确定";
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:message delegate:nil cancelButtonTitle:title otherButtonTitles:nil];
-                [alertView show];
-                [self getback];
+                
+                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+                NSString *alertContent = @"房间已关闭，直播结束啦！";
+                [sigleView showAlertViewTitle:alertContent bgView:self.view];
+                
+                __weak typeof(self)weakSelf = self;
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weakSelf getback];
+                });
+
             }
         }
     } error:^(NSError * _Nonnull error) {
@@ -352,6 +382,8 @@ RCChatRoomViewDelegate
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_IM_USER_TOKEN error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
@@ -410,11 +442,17 @@ RCChatRoomViewDelegate
     NSDictionary * creator = self.dic[@"creator"];
     // 主播退出房间
     if ([model.userInfo.userId isEqualToString:creator[@"id"]]) {
-        NSString *message = @"房间已关闭，直播结束啦！";
-        NSString *title = @"确定";
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:message delegate:nil cancelButtonTitle:title otherButtonTitles:nil];
-        [alertView show];
-        [self getback];
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        NSString *alertContent = @"房间已关闭，直播结束啦！";
+        [sigleView showAlertViewTitle:alertContent bgView:self.view];
+        
+        
+        __weak typeof(self)weakSelf = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [weakSelf getback];
+        });
+        
+
     }
 }
 
@@ -423,9 +461,23 @@ RCChatRoomViewDelegate
     // 主播进入后台
     if ([model.senderUserInfo.userId isEqualToString:creator[@"id"]]) {
         if ([model.signal isEqualToString:SIGNAL_STREAMER_SWITCH_TO_BACKGROUND]) {
-            [self.player.playerView addSubview:self.backImage];
+            if (self.isPK) {
+                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+                NSString *alertContent = @"主播进入后台";
+                [sigleView showAlertViewTitle:alertContent bgView:self.view];
+            }else {
+                [self.player.playerView addSubview:self.backImage];
+            }
+            
         }else if ([model.signal isEqualToString:SIGNAL_STREAMER_BACK_TO_LIVING]){
-            [self.backImage removeFromSuperview];
+            if (self.isPK) {
+                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+                NSString *alertContent = @"主播返回前台";
+                [sigleView showAlertViewTitle:alertContent bgView:self.view];
+            }else {
+                [self.backImage removeFromSuperview];
+            }
+            
         }
         
     }

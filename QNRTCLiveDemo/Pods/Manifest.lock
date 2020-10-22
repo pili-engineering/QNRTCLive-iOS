@@ -6,29 +6,32 @@ PODS:
   - PLPlayerKit (3.4.3):
     - PLPlayerKit/iphoneos (= 3.4.3)
   - PLPlayerKit/iphoneos (3.4.3)
+  - Qiniu (7.4.4):
+    - HappyDNS (~> 0.3.17)
   - QNRTCKit (3.0.0)
   - RongCloudIM/IMKit (2.10.4):
     - RongCloudIM/IMLib
   - RongCloudIM/IMLib (2.10.4)
 
 DEPENDENCIES:
-  - HappyDNS (= 0.3.17)
   - jetfire
   - Masonry (= 1.0.2)
   - MJRefresh
   - PLPlayerKit (= 3.4.3)
+  - Qiniu (= 7.4.4)
   - QNRTCKit (= 3.0.0)
   - RongCloudIM/IMKit (= 2.10.4)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
-    - HappyDNS
     - jetfire
     - Masonry
     - RongCloudIM
   trunk:
+    - HappyDNS
     - MJRefresh
     - PLPlayerKit
+    - Qiniu
     - QNRTCKit
 
 SPEC CHECKSUMS:
@@ -37,9 +40,10 @@ SPEC CHECKSUMS:
   Masonry: 7c429b56da9d4ee0bbb3ed77a5ea710d6a5df39e
   MJRefresh: 6afc955813966afb08305477dd7a0d9ad5e79a16
   PLPlayerKit: a44734dc78c1f8f9fb22c537fa1916612fa46b06
+  Qiniu: 529d25de615c6ad1cb587f9d165a160d98e9fac9
   QNRTCKit: e61e52a3c230e4d1123686690b0972f7ec61853a
   RongCloudIM: 741d6f0e655b8fd77c63ee34071d4f9bf146aae6
 
-PODFILE CHECKSUM: dee80f0e0016718d0b6b82e7342cc0b56b81b82e
+PODFILE CHECKSUM: dba4f6a54b4f2ec7c82b9111dec782bdb64cf49e
 
 COCOAPODS: 1.10.0.beta.1

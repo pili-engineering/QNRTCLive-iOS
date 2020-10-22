@@ -111,6 +111,7 @@ UITextFieldDelegate
     }];
     
     self.phoneTextField = [[UITextField alloc] init];
+    self.phoneTextField.backgroundColor = [UIColor whiteColor];
     self.phoneTextField.placeholder = @"请输入手机号";
     self.phoneTextField.borderStyle = UITextBorderStyleNone;
     self.phoneTextField.font = QN_FONT_REGULAR(14);
@@ -144,6 +145,7 @@ UITextFieldDelegate
     [self.getCodeButton addTarget:self action:@selector(getCode) forControlEvents:UIControlEventTouchUpInside];
     
     self.checkTextField = [[UITextField alloc] init];
+    self.checkTextField.backgroundColor = [UIColor whiteColor];
     self.checkTextField.placeholder = @"请输入验证码";
     self.checkTextField.borderStyle = UITextBorderStyleNone;
     self.checkTextField.font = QN_FONT_REGULAR(14);
@@ -158,6 +160,8 @@ UITextFieldDelegate
         make.bottom.mas_equalTo(lineViewTwo.mas_bottom).mas_offset(-8);
         make.height.mas_equalTo(22);
     }];
+    
+    [self adjustColor];
     
     // 登陆按钮
     self.loginButton = [[UIButton alloc] init];
@@ -192,6 +196,7 @@ UITextFieldDelegate
         make.size.mas_equalTo(CGSizeMake(20, 20));
     }];
     [self.selectButton addTarget:self action:@selector(selectAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.selectButton.selected = YES;
 
     self.userAgentButton = [[UIButton alloc] init];
     self.userAgentButton.titleLabel.font = QN_FONT_REGULAR(14);
@@ -215,7 +220,7 @@ UITextFieldDelegate
     infolabel.font = QN_FONT_REGULAR(14);
     infolabel.textColor = QN_COLOR_RGB(135, 135, 135, 1);
     infolabel.textAlignment = NSTextAlignmentCenter;
-    infolabel.text = @"登陆及表示同意";
+    infolabel.text = @"登录即表示同意";
     [infolabel sizeToFit];
     [agreementView addSubview:infolabel];
     [infolabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -243,7 +248,22 @@ UITextFieldDelegate
     }];
 }
 
+- (void)adjustColor {
+    if (@available(iOS 13.0, *)) {
+        UIColor *dyColor = [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trainCollection) {
+            if ([trainCollection userInterfaceStyle] == UIUserInterfaceStyleLight) {
+                return [UIColor grayColor];
+            } else {
+                return [UIColor darkGrayColor];
+            }
+        }];
+        [_phoneTextField setValue:dyColor forKeyPath:@"placeholderLabel.textColor"];
+        [_checkTextField setValue:dyColor forKeyPath:@"placeholderLabel.textColor"];
+    }
+}
+
 # pragma mark -
+
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
     
@@ -255,14 +275,22 @@ UITextFieldDelegate
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     if ([textField isEqual:self.phoneTextField]) {
-        if (textField.text.length > 11) {
-            return NO;
+        if (textField.text.length >= 11) {
+            if (string.length == 0) {
+                return YES;
+            } else{
+                return NO;
+            }
         } else{
             return YES;
         }
     } else{
-        if (textField.text.length > 6) {
-            return NO;
+        if (textField.text.length >= 6) {
+            if (string.length == 0) {
+                return YES;
+            } else{
+                return NO;
+            }
         } else{
             return YES;
         }
@@ -290,14 +318,13 @@ UITextFieldDelegate
 }
 
 - (void)getCode {
+    QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
     if (self.phoneTextField.text.length == 0) {
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:@"请填写手机号码！" bgView:self.view];
         return;
     }
     
-    if (self.phoneTextField.text.length < 11) {
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+    if (self.phoneTextField.text.length < 11 || self.phoneTextField.text.length > 11) {
         [sigleView showAlertViewTitle:@"请填写正确的手机号码！" bgView:self.view];
         return;
     }
@@ -305,23 +332,24 @@ UITextFieldDelegate
     [QNNetworkRequest requestWithUrl:QN_SEND_CODE(self.phoneTextField.text) requestType:QNRequestTypePost dic:nil header:nil success:^(NSDictionary * _Nonnull resultDic) {
         NSLog(@"QN_SEND_CODE resultDic --- %@", resultDic);
         if (resultDic.count == 0) {
+            [sigleView showAlertViewTitle:@"发送成功！" bgView:self.view];
             self.countNumber = 300;
             self.timer = [NSTimer timerWithTimeInterval:1 target:self selector:@selector(secondsCount) userInfo:nil repeats:YES];
             [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_SEND_CODE error --- %@", error);
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取验证码错误 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
 - (void)enterHomeView {
+    QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
     if (self.phoneTextField.text.length == 0 || self.checkTextField.text.length == 0) {
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:@"手机号码及验证码不能为空！" bgView:self.view];
         return;
     }
     if (!self.selectButton.selected) {
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:@"请勾选同意用户协议！" bgView:self.view];
         return;
     }
@@ -343,9 +371,18 @@ UITextFieldDelegate
                 homeViewController.modalPresentationStyle = UIModalPresentationFullScreen;
                 [self presentViewController:homeViewController animated:YES completion:nil];
             }
+        } else{
+            if ([resultDic.allKeys containsObject:@"code"]) {
+                NSInteger codeNumber = [resultDic[@"code"] integerValue];
+                if (codeNumber == 401002) {
+                    [sigleView showAlertViewTitle:@"验证码错误或已过期！" bgView:self.view];
+                }
+            }
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_USE_CODE_LOGIN error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"用户登录失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 

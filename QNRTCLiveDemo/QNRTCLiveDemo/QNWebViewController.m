@@ -7,10 +7,14 @@
 //
 
 #import "QNWebViewController.h"
+#import <WebKit/WebKit.h>
 
 @interface QNWebViewController ()
-
-@property (nonatomic, strong) UIWebView *webView;
+<
+WKUIDelegate,
+WKNavigationDelegate
+>
+@property (nonatomic, strong) WKWebView *webView;
 @property (nonatomic, strong) UIButton *backButton;
 
 @property (nonatomic, strong) QNReachability *reachability;
@@ -37,7 +41,11 @@
         space = 40;
     }
     
-    _webView = [[UIWebView alloc] initWithFrame:CGRectMake(0, space, QN_KSCREEN_WIDTH, QN_KSCREEN_HEIGHT - space)];
+    WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
+    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, space, QN_KSCREEN_WIDTH, QN_KSCREEN_HEIGHT - space) configuration:configuration];
+    _webView.UIDelegate = self;
+    _webView.navigationDelegate = self;
+    _webView.allowsBackForwardNavigationGestures = YES;
     [_webView loadRequest:[NSURLRequest requestWithURL:_url]];
     [self.view addSubview:_webView];
     
@@ -78,6 +86,27 @@
     }
     [sigleView showAlertViewTitle:alertContent bgView:self.view];
 }
+
+#pragma mark - WKNavigationDelegate
+// 页面开始加载时调用
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
+}
+// 页面加载失败时调用
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
+}
+// 当内容开始返回时调用
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
+}
+// 页面加载完成之后调用
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+}
+// 接收到服务器跳转请求即服务重定向时之后调用
+- (void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {
+}
+//进程被终止时调用
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView{
+}
+
 
 - (void)getBack {
     [self dismissViewControllerAnimated:YES completion:nil];

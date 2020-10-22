@@ -25,9 +25,8 @@
 
 // 颜色值
 #define QN_COLOR_RGB(a,b,c,d) [UIColor colorWithRed:a/255.0 green:b/255.0 blue:c/255.0 alpha:d]
-#define QN_LINE_COLOR COLOR_RGB(195, 198, 198, 1)
-#define QN_BUTTON_BACKGROUNDCOLOR COLOR_RGB(54, 54, 54, 0.38)
-#define QN_SELECTED_BLUE COLOR_RGB(69, 169, 195, 1)
+#define QN_LINE_COLOR QN_COLOR_RGB(198, 198, 198, 1)
+#define QN_MAIN_COLOR QN_COLOR_RGB(6.0, 130.0, 255.0, 1)
 
 // 获取系统版本
 #define QN_IOS_SYSTEM_STRING [[UIDevice currentDevice] systemVersion]
@@ -56,6 +55,9 @@
 #define QN_REFRESH_LIVE_ROOM [NSString stringWithFormat:@"%@/v1/refresh_room", QN_REQUEST_HOST]
 #define QN_IM_USER_TOKEN [NSString stringWithFormat:@"%@/v1/im_user_token", QN_REQUEST_HOST]
 
+#define QN_FEEDBACK_POST [NSString stringWithFormat:@"%@/v1/feedbacks", QN_REQUEST_HOST]
+#define QN_UPLOAD_TOKEN [NSString stringWithFormat:@"%@/v1/upload/token", QN_REQUEST_HOST]
+
 // put
 #define QN_UPDATE_PROFILE [NSString stringWithFormat:@"%@/v1/profile", QN_REQUEST_HOST]
 #define QN_UPDATE_LIVE_PROFILE(roomId) [NSString stringWithFormat:@"%@/v1/rooms/%@", QN_REQUEST_HOST, roomId]
@@ -66,6 +68,7 @@
 #define QN_GET_CREATE_ROOM(createId) [NSString stringWithFormat:@"%@/v1/rooms?creator=%@", QN_REQUEST_HOST, createId]
 #define QN_LIVE_ROOMID(roomId) [NSString stringWithFormat:@"%@/v1/rooms/%@", QN_REQUEST_HOST, roomId]
 
+#ifdef __OBJC__
 // 自定义
 #import "QNNetworkRequest.h"
 #import "QNRoomUserView.h"
@@ -86,5 +89,8 @@
 #import <PLPlayerKit/PLPlayerKit.h>
 #import <HappyDNS/HappyDNS.h>
 #import <MJRefresh/MJRefresh.h>
+#import <QiniuSDK.h>
+
+#endif
 
 #endif /* QNPublicHeader_h */

@@ -499,7 +499,7 @@ static int clickPraiseBtnTimes  = 0 ;
     imageView.backgroundColor = [UIColor clearColor];
     imageView.clipsToBounds = YES;
     [superController.view addSubview:imageView];
-    [superController.view insertSubview:imageView atIndex:1];
+    [superController.view insertSubview:imageView atIndex:3];
     //  随机数来决定动画过程
     CGFloat startX = round(random() % 200);
     CGFloat scale = round(random() % 2) + 1.0;

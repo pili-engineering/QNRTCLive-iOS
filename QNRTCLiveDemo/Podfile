@@ -10,10 +10,10 @@ target 'QNRTCLiveDemo' do
   pod 'QNRTCKit', '3.0.0'
   pod 'Masonry', '1.0.2'
   pod 'PLPlayerKit','3.4.3'
-  pod 'HappyDNS','0.3.17'
   pod 'RongCloudIM/IMKit','2.10.4'
   pod 'jetfire'
   pod 'MJRefresh'
+  pod 'Qiniu', '7.4.4'
 
   target 'QNRTCLiveDemoTests' do
     inherit! :search_paths
