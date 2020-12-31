@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface QNWebViewController : UIViewController
 @property (nonatomic, strong) NSURL *url;
+@property (nonatomic, strong) NSString *titleName;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -11,6 +11,7 @@
 #import "QNPlayerViewController.h"
 #import "QNAppDelegate.h"
 #import "QNLoginViewController.h"
+#import "QNAudioRoomViewController.h"
 
 static NSString *cellIdentifier = @"PlayerListTableViewCell";
 
@@ -41,7 +42,8 @@ UITableViewDataSource
     
     CGFloat navigationHeight = 64;
     CGFloat space = 10;
-    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX) {
+    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX ||
+       QN_iPhone12Min || QN_iPhone12Pro || QN_iPhone12PMax) {
         navigationHeight = 88;
         space = 20;
     }
@@ -118,6 +120,7 @@ UITableViewDataSource
         } else {
             if ([resultDic[@"code"] longValue] == 401003) {
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"QN_USER_INFOMATION"];
+                [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"QN_USER_IM_TOKEN"];
                 QNAppDelegate *appdelegate = (QNAppDelegate *)[UIApplication sharedApplication].delegate;
                 if ([appdelegate.window.rootViewController isKindOfClass:[QNLoginViewController class]] == YES) {
                     [self dismissViewControllerAnimated:YES completion:nil];
@@ -161,13 +164,24 @@ UITableViewDataSource
     NSDictionary *dic = _listArray[indexPath.row];
     NSDictionary *defaultDic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
 
-    [QNNetworkRequest requestWithUrl:QN_ENTER_LIVE_ROOM requestType:QNRequestTypePost dic:@{@"userID":defaultDic[@"id"], @"roomID":dic[@"id"]} header:[NSString stringWithFormat:@"Bearer %@", defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_ENTER_LIVE_ROOM resultDic --- %@", resultDic);
+    [QNNetworkRequest requestWithUrl:QN_ENTER_ROOM requestType:QNRequestTypePost dic:@{@"userID":defaultDic[@"id"], @"roomID":dic[@"id"]} header:[NSString stringWithFormat:@"Bearer %@", defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+        NSLog(@"QN_ENTER_ROOM resultDic --- %@", resultDic);
         if ([resultDic.allKeys containsObject:@"roomID"]) {
-            QNPlayerViewController *playerViewController = [[QNPlayerViewController alloc] init];
-            playerViewController.dic = resultDic;
-            playerViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-            [self presentViewController:playerViewController animated:YES completion:nil];
+            if ([resultDic[@"roomType"] isEqualToString:@"voice"]) {
+                // 观众进入语音房
+                QNAudioRoomViewController *audioRoomViewController = [[QNAudioRoomViewController alloc]init];
+                audioRoomViewController.isAdmin = NO;
+                audioRoomViewController.resultDic = resultDic;
+                audioRoomViewController.hidesBottomBarWhenPushed = YES;
+                audioRoomViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+                [self presentViewController:audioRoomViewController animated:YES completion:nil];
+            } else{
+                // 观众进入直播间
+                QNPlayerViewController *playerViewController = [[QNPlayerViewController alloc] init];
+                playerViewController.dic = resultDic;
+                playerViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+                [self presentViewController:playerViewController animated:YES completion:nil];
+            }
         } else {
             if ([resultDic[@"code"] longValue] == 404002) {
                 QNSigleAlertView *alertView = [[QNSigleAlertView alloc] init];
@@ -176,7 +190,7 @@ UITableViewDataSource
             }
         }
     } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_ENTER_LIVE_ROOM error --- %@", error);
+        NSLog(@"QN_ENTER_ROOM error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:[NSString stringWithFormat:@"进入直播间失败 %ld", (long)error.code] bgView:self.view];
     }];

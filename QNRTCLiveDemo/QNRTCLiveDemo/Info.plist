@@ -35,6 +35,10 @@
 	<string>若不允许，将无法保存您的照片</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>若不允许，将无法查看您的照片</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

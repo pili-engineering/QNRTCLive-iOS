@@ -104,9 +104,9 @@ dispatch_queue_t __RCDLive_ConversationList_refresh_queue = NULL;
                         errorBlock(0);
                     }
                 } else{
-                    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:userId name:userName portrait:@""];
+                    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:userId name:userName portrait:portraitUri];
                     //                    [self connectIM:token userInfo:userInfo];
-                    [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] connectRongCloudWithToken:token userName:userName success:^(NSString *userId) {
+                    [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] connectRongCloudWithToken:token userName:userName portraitUri:portraitUri success:^(NSString *userId) {
                         if (![userInfo.userId isEqualToString:userId]) {
                             NSLog(@"id不一致");
                         }
@@ -140,6 +140,7 @@ dispatch_queue_t __RCDLive_ConversationList_refresh_queue = NULL;
             NSLog(@"已经连接");
             RCUserInfo *userinfo = [RCIMClient sharedRCIMClient].currentUserInfo;
             userinfo.name = userName;
+            userinfo.portraitUri = portraitUri;
             [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] setCurrentUserInfo:userinfo];
             [RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].isLogin = YES;
             if (successBlock) {
@@ -151,6 +152,7 @@ dispatch_queue_t __RCDLive_ConversationList_refresh_queue = NULL;
 
 - (void)connectRongCloudWithToken:(NSString *)token
                          userName:(NSString *)userName
+                      portraitUri:(NSString *)portraitUri
                           success:(void (^)(NSString *userId))successBlock
                             error:(void (^)(RCConnectErrorCode status))errorBlock
                    tokenIncorrect:(void (^)(void))tokenIncorrectBlock {
@@ -159,7 +161,7 @@ dispatch_queue_t __RCDLive_ConversationList_refresh_queue = NULL;
 [[RCIMClient sharedRCIMClient] connectWithToken:token
        success:^(NSString *userId) {
     // 登录成功
-    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:userId name:userName portrait:@""];
+    RCUserInfo *userInfo = [[RCUserInfo alloc] initWithUserId:userId name:userName portrait:portraitUri];
     [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] setCurrentUserInfo:userInfo];
     [RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].isLogin = YES;
            if (successBlock!=nil) {

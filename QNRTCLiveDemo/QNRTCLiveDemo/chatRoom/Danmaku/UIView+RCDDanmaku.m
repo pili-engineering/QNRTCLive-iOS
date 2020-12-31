@@ -152,6 +152,7 @@ alpha:1.0]
 {
     NSLog(@"总弹幕数%zd",RCDanmakuManager.danmakus.count);
     UILabel *contentLabel = [[UILabel alloc] init];
+    [contentLabel setFont:[UIFont systemFontOfSize:13]];
     [contentLabel setText:[danmaku.contentStr string]];
     [contentLabel sizeToFit];
     NSInteger contentWidth = contentLabel.frame.size.width;
@@ -164,18 +165,26 @@ alpha:1.0]
     UIView *backView = [[UIView alloc] init];
     [backView setFrame:CGRectMake(0, 0, 70+contentWidth, 40)];
     
-    UIImageView *portraitImgV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"audience%@",danmaku.model.portraitUri]]];
+    UIImageView *portraitImgV = [[UIImageView alloc] init];
     [backView addSubview:portraitImgV];
     [portraitImgV setFrame:CGRectMake(0, 0, 40, 40)];
     portraitImgV.layer.cornerRadius = 20;
     portraitImgV.layer.masksToBounds = YES;
+    if ([danmaku.model.portraitUri hasPrefix:@"http"]) {
+        [portraitImgV sd_setImageWithURL:[NSURL URLWithString:danmaku.model.portraitUri]];
+    } else {
+        if (danmaku.model.portraitUri.length != 0) {
+            portraitImgV.image = [UIImage imageNamed:danmaku.model.portraitUri];
+        }
+    }
     
     UILabel *nameLabel = [[UILabel alloc] init];
     [backView addSubview:nameLabel];
     [nameLabel setFrame:CGRectMake(50, 0, 100, 20)];
     [nameLabel setText:danmaku.model.name];
     [nameLabel setTextColor:[UIColor whiteColor]];
-    
+    [nameLabel setFont:[UIFont systemFontOfSize:14]];
+
     [contentLabel setFrame:CGRectMake(50, 20, contentWidth, 20)];
     [contentLabel setTextAlignment:NSTextAlignmentLeft];
     [contentLabel setTextColor:RCCRText_HEXCOLOR(0xffea79)];
@@ -184,12 +193,14 @@ alpha:1.0]
     UILabel* playerLabel = [[UILabel alloc] init];
     
     [playerLabel addSubview:backView];
-//    backView.backgroundColor = [UIColor grayColor];
+    backView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
+    backView.layer.cornerRadius = 20;
+    backView.clipsToBounds = YES;
+
     playerLabel.tag = RCDDanmakuLabelTag;
 //    playerLabel.attributedText = danmaku.contentStr;
-//    [playerLabel sizeToFit];
+    [playerLabel sizeToFit];
     [playerLabel setFrame:CGRectMake(0, 0, 70+contentWidth, 40)];
-//    playerLabel.backgroundColor = [UIColor blueColor];
     switch (danmaku.position) {
         case RCDDanmakuPositionNone:
             [self rc_playFromRightDanmaku:danmaku playerLabel:playerLabel];

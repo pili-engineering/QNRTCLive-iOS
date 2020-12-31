@@ -16,16 +16,13 @@
 // UI
 #import "QNPKUserListView.h"
 #import "QNLiveSettingsView.h"
-#import "QNPKAlertView.h"
+#import "QNDialogAlertView.h"
 #import "RCChatroomUserQuit.h"
 
 // 特效 UI
 #import "BEModernStickerPickerView.h"
 #import "BEModernEffectPickerView.h"
 #import "BETextSliderView.h"
-
-// socket
-#import "QNLiveSocket.h"
 
 static NSString *roomStatus[] = {
     @"QNRoomStateIdle",
@@ -37,11 +34,10 @@ static NSString *roomStatus[] = {
 
 #define QN_BOTTOM_BUTTON_WIDTH 52.0
 
+#define QN_DELAY_MS 5000
+
 static NSString *cameraTag = @"camera";
-
-static NSString *SIGNAL_STREAMER_SWITCH_TO_BACKGROUND = @"streamer_switch_to_backstage";
-
-static NSString *SIGNAL_STREAMER_BACK_TO_LIVING = @"streamer_back_to_living";
+const static NSTimeInterval kQNLiveWebSocketPingInterval = 5;
 
 @interface QNLiveViewController ()
 <
@@ -52,7 +48,7 @@ QNLiveSettingsViewDelegate,
 QNPKUserListViewDelegate,
 BEModernStickerPickerViewDelegate,
 QNEditAlertViewDelegate,
-QNLiveSocketDelegate
+RCChatRoomViewDelegate
 >
 
 /// RTC
@@ -82,16 +78,15 @@ QNLiveSocketDelegate
 */
 @property (nonatomic, assign) NSInteger serialNum;
 
-@property (nonatomic, copy) NSString *userId;
+@property (nonatomic, copy) NSString *userId; // jobId
 @property (nonatomic, copy) NSString *roomName;
-@property (nonatomic, copy) NSString *roomId;  // jobId
+@property (nonatomic, copy) NSString *roomId;
 @property (nonatomic, copy) NSString *rtcRoom;
-@property (nonatomic, copy) NSString *wsURL;
 
-@property (nonatomic, copy) NSString *jobId;
-
-@property (nonatomic, strong) NSString *pkRoomId;
+@property (nonatomic, copy) NSString *pkRoomId;
 @property (nonatomic, copy) NSString *editRoomName;
+@property (nonatomic, copy) NSString *pkUserId;
+@property (nonatomic, copy) NSString *pkNickName;
 
 @property (nonatomic, strong) NSDictionary *createResultDic;
 
@@ -100,6 +95,11 @@ QNLiveSocketDelegate
 
 @property (nonatomic, assign) CGSize videoEncodeSize;
 @property (nonatomic, assign) NSInteger bitrate;
+
+@property (nonatomic, assign) BOOL muteVideo;
+@property (nonatomic, assign) BOOL muteAudio;
+@property (nonatomic, assign) BOOL muteSpeaker;
+@property (nonatomic, assign) BOOL torchOn;
 
 // 0 未直播    1 直播     2 PK 直播
 @property (nonatomic, assign) NSInteger liveState;
@@ -147,18 +147,25 @@ QNLiveSocketDelegate
 @property (nonatomic, strong) UILabel *roomNumberLabel;
 @property (nonatomic, strong) QNPKUserListView *pkListView;
 @property (nonatomic, strong) QNPKUserListView *listView;
-@property (nonatomic, strong) QNPKAlertView *pkNotifyView;
-@property (nonatomic, strong) QNPKAlertView *resultAlertView;
+@property (nonatomic, strong) QNDialogAlertView *pkNotifyView;
+@property (nonatomic, strong) QNDialogAlertView *resultAlertView;
 @property (nonatomic, strong) QNLiveSettingsView *settingsView;
 @property (nonatomic, strong) QNEditAlertView *editAlertView;
 
 @property (nonatomic, strong) NSTimer *timer;
-
 @property (nonatomic, strong) NSDictionary *defaultDic;
-// socket
-@property (nonatomic, strong) QNLiveSocket * socket;
-
 @property (nonatomic, strong) QNReachability *reachability;
+
+// IM signal
+@property (nonatomic, strong) NSDate *lastSendTime;
+@property (nonatomic, strong) NSDate *lastReceiveTime;
+@property (nonatomic, strong) dispatch_source_t signalTimer;
+@property (nonatomic, assign) NSInteger pongTimeout;
+@property (nonatomic, strong) dispatch_queue_t operationQueue;
+
+@property (nonatomic, strong) NSMutableArray *nickNameArray;
+
+@property (nonatomic, strong) QNSigleAlertView *alertContentView;
 
 @end
 
@@ -174,6 +181,9 @@ QNLiveSocketDelegate
     _timer = nil;
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kQNReachabilityChangedNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillResignActiveNotification object:nil];
 }
 
 - (void)viewDidLoad {
@@ -195,10 +205,6 @@ QNLiveSocketDelegate
             NSArray *array = resultDic[@"rooms"];
             self.roomId = array[0][@"id"];
             self.roomName = array[0][@"name"];
-
-            self.jobId = self.roomId;
-            NSLog(@"QN_GET_CREATE_ROOM jobId --- %@", self.jobId);
-
             if (self.roomNameLabel) {
                 self.roomNameLabel.text = self.roomName;
             }
@@ -211,6 +217,9 @@ QNLiveSocketDelegate
     self.serialNum = 0;
     self.videoEncodeSize = CGSizeMake(720, 1280);
     self.bitrate = 2000 * 1000;
+    self.nickNameArray = [NSMutableArray arrayWithArray:@[@{@"userId":self.userId, @"nickname":self.defaultDic[@"nickname"]}]];
+    
+    self.alertContentView = [[QNSigleAlertView alloc] init];
     
     self.view.backgroundColor = [UIColor whiteColor];
     [self layoutInterfaceView];
@@ -234,10 +243,9 @@ QNLiveSocketDelegate
     
     [self setupEffect];
     
-    //socket
-    self.socket = [[QNLiveSocket alloc] init];
-    self.socket.delegate = self;
-    self.socket.operationQueue = dispatch_queue_create("com.qiniu.qnrtcLive.operation", DISPATCH_QUEUE_SERIAL);
+    // IM signal
+    self.operationQueue = dispatch_queue_create("com.qiniu.qnrtcLive.operation", DISPATCH_QUEUE_SERIAL);
+
     
     //监听是否重新进入程序程序.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -277,12 +285,8 @@ QNLiveSocketDelegate
     NSLog(@"live end background");
     if (self.engine) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.engine startCapture];
+            [self.engine pushCameraTrackWithImage:nil];
         });
-        RCChatroomSignal *endBackgroundMessage = [[RCChatroomSignal alloc]init];
-        [endBackgroundMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
-        endBackgroundMessage.signal = SIGNAL_STREAMER_BACK_TO_LIVING;
-        [self.chatRoomView sendMessage:endBackgroundMessage pushContent:nil success:nil error:nil];
     }
 }
 
@@ -290,12 +294,8 @@ QNLiveSocketDelegate
     NSLog(@"live enter background");
     if (self.engine) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.engine stopCapture];
+            [self.engine pushCameraTrackWithImage:[UIImage imageNamed:@"push_image.png"]];
         });
-        RCChatroomSignal *endBackgroundMessage = [[RCChatroomSignal alloc]init];
-        [endBackgroundMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
-        endBackgroundMessage.signal = SIGNAL_STREAMER_SWITCH_TO_BACKGROUND;
-        [self.chatRoomView sendMessage:endBackgroundMessage pushContent:nil success:nil error:nil];
     }
 }
 
@@ -353,7 +353,7 @@ QNLiveSocketDelegate
     self.mergeConfig = [QNMergeStreamConfiguration defaultConfiguration];
     QNBackgroundInfo *bgInfo = [[QNBackgroundInfo alloc] init];
     bgInfo.frame = CGRectMake(0, 0, 720, 1280);
-    bgInfo.backgroundUrl = @"http://pili-playback.qnsdk.com/streaming_background.png";
+    bgInfo.backgroundUrl = @"http://pili-playback.qnsdk.com/streaming_black_background.png";
     self.mergeConfig.background = bgInfo;
     self.mergeConfig.minBitrateBps = 1000*1000;
     self.mergeConfig.maxBitrateBps = 1000*1000;
@@ -376,7 +376,9 @@ QNLiveSocketDelegate
         }
         [self showAlertWithMessage:errorMessage title:@"错误" completionHandler:^{
             [[NSNotificationCenter defaultCenter] removeObserver:self];
-            [self dismissViewControllerAnimated:YES completion:nil];
+            [self dismissViewControllerAnimated:YES completion:^{
+                [self getback];
+            }];
         }];
     });
 }
@@ -400,6 +402,9 @@ QNLiveSocketDelegate
             [alertView showAlertViewTitle:@"正在重连..." bgView:self.view];
             self.videoButton.enabled = NO;
             self.microphoneButton.enabled = NO;
+            if (self.liveState == 1) {
+                self.liveState = 0;
+            }
         } else if (QNRoomStateReconnected == roomState) {
             [alertView showAlertViewTitle:@"重新加入房间成功" bgView:self.view];
             self.videoButton.enabled = YES;
@@ -436,6 +441,11 @@ QNLiveSocketDelegate
 - (void)RTCEngine:(QNRTCEngine *)engine didPublishLocalTracks:(NSArray<QNTrackInfo *> *)tracks {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"didPublishLocalTracks: %@", tracks);
+        [self.engine muteVideo:self.muteVideo];
+        [self.engine muteAudio:self.muteAudio];
+        [self.engine setMuteSpeaker:self.muteSpeaker];
+        [self.engine setTorchOn:self.torchOn];
+
         for (QNTrackInfo *trackInfo in tracks) {
             if (trackInfo.kind == QNTrackKindAudio) {
                 self.microphoneButton.enabled = YES;
@@ -449,22 +459,20 @@ QNLiveSocketDelegate
             }
         }
         
-        if (self.liveState == 0 && self.audioTrackInfo && self.cameraTrackInfo) {
+        if (self.liveState != 2 && self.audioTrackInfo && self.cameraTrackInfo) {
             self.liveState = 1;
             self.serialNum++;
-            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.jobId, @(self.serialNum)];
+            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
             self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
             self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
-            self.forwardConfig.jobId = self.jobId;
+            self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];;
             [self.engine createForwardJobWithConfiguration:self.forwardConfig];
             if (!self.pkToken) {
                 [self enterIMWithRequestToken];
                 self.pkToken = nil;
                 self.pkRoomId = nil;
-                [self roomLabelIsCenter:NO];
                 self.listButton.hidden = NO;
                 self.pkButton.hidden = NO;
-                self.roomNumberLabel.hidden = NO;
                 self.editButton.hidden = YES;
                 
                 self.timer = [NSTimer timerWithTimeInterval:5.0 target:self selector:@selector(updateAudienceCount) userInfo:nil repeats:YES];
@@ -480,7 +488,7 @@ QNLiveSocketDelegate
                 }
                 if (trackInfo.kind == QNTrackKindVideo) {
                     QNMergeStreamLayout *layout = [[QNMergeStreamLayout alloc] init];
-                    layout.frame = CGRectMake(0, 320, 360, 640);
+                    layout.frame = CGRectMake(0, 222.6, 360, 640);
                     layout.zIndex = 0;
                     layout.trackId = trackInfo.trackId;
                     [self.layouts addObject:layout];
@@ -490,8 +498,8 @@ QNLiveSocketDelegate
                         
             if (self.layouts.count > 2) {
                 self.serialNum++;
-                self.mergeConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.jobId, @(self.serialNum)];
-                self.mergeConfig.jobId = self.jobId;
+                self.mergeConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
+                self.mergeConfig.jobId = [NSString stringWithFormat:@"merge-%@", self.userId];;
                 [self.engine createMergeStreamJobWithConfiguration:self.mergeConfig];
             }
         }
@@ -521,7 +529,7 @@ QNLiveSocketDelegate
                 [self.layouts addObject:audioLayout];
                 
                 QNMergeStreamLayout *layout = [[QNMergeStreamLayout alloc] init];
-                layout.frame = CGRectMake(0, 320, 360, 640);
+                layout.frame = CGRectMake(0, 222.6, 360, 640);
                 layout.zIndex = 0;
                 layout.trackId = self.cameraTrackInfo.trackId;
                 [self.layouts addObject:layout];
@@ -535,7 +543,7 @@ QNLiveSocketDelegate
                 }
                 if (trackInfo.kind == QNTrackKindVideo) {
                     QNMergeStreamLayout *layout = [[QNMergeStreamLayout alloc] init];
-                    layout.frame = CGRectMake(360, 320, 360, 640);
+                    layout.frame = CGRectMake(360, 222.6, 360, 640);
                     layout.zIndex = 0;
                     layout.trackId = trackInfo.trackId;
                     [self.layouts addObject:layout];
@@ -545,8 +553,8 @@ QNLiveSocketDelegate
             
             if (self.layouts.count > 2) {
                 self.serialNum++;
-                self.mergeConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.jobId, @(self.serialNum)];
-                self.mergeConfig.jobId = self.jobId;
+                self.mergeConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
+                self.mergeConfig.jobId = [NSString stringWithFormat:@"merge-%@", self.userId];;
                 [self.engine createMergeStreamJobWithConfiguration:self.mergeConfig];
             }
         }
@@ -661,9 +669,9 @@ QNLiveSocketDelegate
         NSLog(@"didLeaveOfRemoteUserId: %@", userId);
         [self hideAllUIView];
         if (self.isAdmin) {
-            [self.socket endPK:self.roomId];
+            [self endPK:self.roomId];
         } else{
-            [self.socket endPK:self.pkRoomId];
+            [self endPK:self.pkRoomId];
         }
     });
 }
@@ -683,10 +691,12 @@ QNLiveSocketDelegate
 - (void)RTCEngine:(QNRTCEngine *)engine didCreateForwardJobWithJobId:(NSString *)jobId {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"创建单路转推成功的回调 -- %@", jobId);
-        self.startForwardButton.hidden = YES;
+        self.backButton.hidden = YES;
+        [self roomLabelIsCenter:NO];
+        self.roomNumberLabel.hidden = NO;
+        
         self.commentButton.hidden = NO;
         self.stopButton.hidden = NO;
-        self.backButton.hidden = YES;
         [self exchangeButtonViewsStyle:NO];
     });
 }
@@ -755,8 +765,9 @@ QNLiveSocketDelegate
     self.model.attentionAmount = 0;
     self.model.liveMode = RCCRLiveModeHost;
     self.model.pubUserId = [RCIMClient sharedRCIMClient].currentUserInfo.userId;
-    self.chatRoomView = [[RCChatRoomView alloc] initWithFrame:CGRectMake(0,[UIScreen mainScreen].bounds.size.height - (237 +50)  - bottomExtraDistance,[UIScreen mainScreen].bounds.size.width, 237+50) model:self.model];
     
+    self.chatRoomView = [[RCChatRoomView alloc] initWithFrame:CGRectMake(0, QN_KSCREEN_HEIGHT - (237 +50)  - bottomExtraDistance, QN_KSCREEN_WIDTH, 237+50) model:self.model];
+    self.chatRoomView.delegate = self;
     self.chatRoomView.commentBtn = self.commentButton;
 }
 
@@ -780,30 +791,57 @@ QNLiveSocketDelegate
     return YES;
 }
 
-- (void)joinChatRoomWithToken:(NSString *)token userName:(NSString *)userName{
+- (void)joinChatRoomWithToken:(NSString *)token userName:(NSString *)userName avatar:(NSString *)avatar {
     [self.view insertSubview:self.chatRoomView atIndex:2];
     self.model.roomId = self.roomId;
-    [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] connectRongCloudWithToken:token userName:userName success:^(NSString *userId) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[RCIMClient sharedRCIMClient] joinChatRoom:self.model.roomId messageCount:-1 success:^{
+    
+    RCConnectionStatus status = [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] getRongCloudConnectionStatus];
+    if (status != ConnectionStatus_Connected) {
+        [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] connectRongCloudWithToken:token userName:userName portraitUri:avatar success:^(NSString *userId) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[RCIMClient sharedRCIMClient] joinChatRoom:self.model.roomId messageCount:-1 success:^{
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        RCChatroomWelcome *joinChatroomMessage = [[RCChatroomWelcome alloc]init];
+                        [joinChatroomMessage setId:self.userId];
+                        [self.chatRoomView sendMessage:joinChatroomMessage pushContent:nil success:^(long messageId) {
+                            [self startTimer];
+                        } error:^(RCErrorCode nErrorCode, long messageId) {
+                            NSLog(@"joinChatroomMessage nErrorCode: %ld messageId: %ld", nErrorCode, messageId);
+                        }];
+                    });
+                } error:^(RCErrorCode status) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.chatRoomView alertErrorWithTitle:@"提示" message:@"加入聊天室失败" ok:@"知道了"];
+                    });
+                }];
+            });
+            
+        } error:^(RCConnectErrorCode status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"status --- %ld", status);
+            });
+        } tokenIncorrect:^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"tokenIncorrect");
+            });
+        }];
+    } else {
+        [[RCIMClient sharedRCIMClient] joinChatRoom:self.model.roomId messageCount:-1 success:^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 RCChatroomWelcome *joinChatroomMessage = [[RCChatroomWelcome alloc]init];
-                        [joinChatroomMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
-                        [self.chatRoomView sendMessage:joinChatroomMessage pushContent:nil success:nil error:nil];
-            } error:^(RCErrorCode status) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.chatRoomView alertErrorWithTitle:@"提示" message:@"加入聊天室失败" ok:@"知道了"];
-                });
-            }];
-        });
-        
-    } error:^(RCConnectErrorCode status) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-        });
-        
-    } tokenIncorrect:^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-        });
-    }];
+                [joinChatroomMessage setId:self.userId];
+                [self.chatRoomView sendMessage:joinChatroomMessage pushContent:nil success:^(long messageId) {
+                    [self startTimer];
+                } error:^(RCErrorCode nErrorCode, long messageId) {
+                    NSLog(@"joinChatroomMessage nErrorCode: %ld messageId: %ld", nErrorCode, messageId);
+                }];
+            });
+        } error:^(RCErrorCode status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.chatRoomView alertErrorWithTitle:@"提示" message:@"加入聊天室失败" ok:@"知道了"];
+            });
+        }];
+    }
 }
 
 # pragma mark - effects
@@ -958,16 +996,15 @@ QNLiveSocketDelegate
     [self layoutBottomViews];
     
     CGFloat statusBarHeight = 20;
-    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX) {
+    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX ||
+       QN_iPhone12Min || QN_iPhone12Pro || QN_iPhone12PMax) {
         statusBarHeight = 40;
     }
-    
     _roomNameLabel = [[UILabel alloc] init];
     _roomNameLabel.textColor = [UIColor whiteColor];
     _roomNameLabel.font = QN_FONT_REGULAR(14);
     _roomNameLabel.textAlignment = NSTextAlignmentCenter;
     _roomNameLabel.text = self.roomName;
-//    [_roomNameLabel sizeToFit];
     [self.view addSubview:_roomNameLabel];
     [self roomLabelIsCenter:YES];
     
@@ -1058,6 +1095,8 @@ QNLiveSocketDelegate
         make.right.top.bottom.equalTo(self.view);
         make.width.mas_equalTo(QN_KSCREEN_WIDTH/2);
     }];
+    
+    _pkBgView.hidden = YES;
 
     [self readyUIView];
 }
@@ -1175,7 +1214,9 @@ QNLiveSocketDelegate
 # pragma mark - actions
 
 - (void)startLiveAction:(UIButton *)startButton {
+    [self.alertContentView addAlertContent:@"开启直播中..." bgView:self.view];
     _startForwardButton.selected = YES;
+    self.startForwardButton.hidden = YES;
     [self createLiveRoomAccordingSituation];
 }
 
@@ -1228,20 +1269,18 @@ QNLiveSocketDelegate
 
 - (void)leaveAction:(UIButton *)stopButton {
     if (self.liveState == 1) {
-        [self.engine stopForwardJobWithJobId:self.jobId];
+        [self.engine stopForwardJobWithJobId:[NSString stringWithFormat:@"forward-%@", self.userId]];
     }
     if (self.liveState == 2) {
-        [self.engine stopMergeStreamWithJobId:self.jobId];
+        [self.engine stopMergeStreamWithJobId:[NSString stringWithFormat:@"merge-%@", self.userId]];
     }
     [self.engine leaveRoom];
     
     RCChatroomUserQuit *quitChatroomMessage = [[RCChatroomUserQuit alloc]init];
-            [quitChatroomMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
+            [quitChatroomMessage setId:self.userId];
     [self.chatRoomView sendMessage:quitChatroomMessage pushContent:nil success:nil error:nil];
 
     [self.chatRoomView removeFromSuperview];
-    [self.socket disconnect];
-    
     [self getback];
 }
 
@@ -1274,7 +1313,8 @@ QNLiveSocketDelegate
         }
     }
     if (self.liveState == 2) {
-        [self.listView updateListArray:[NSMutableArray arrayWithArray:self.engine.userList]];
+        NSMutableArray *mutableArray = [NSMutableArray arrayWithArray:self.nickNameArray];
+        [self.listView updateListArray:[NSMutableArray arrayWithArray:[mutableArray copy]]];
         [UIView animateWithDuration:0.2 animations:^{
             self.listView.frame = CGRectMake(0, QN_KSCREEN_HEIGHT - 300, QN_KSCREEN_WIDTH, 300);
         }];
@@ -1291,7 +1331,7 @@ QNLiveSocketDelegate
     if (self.liveState == 2 || self.liveState == 1) {
         self.liveState = 0;
         [self.engine leaveRoom];
-        [self closeLiveRoom];
+        [self sendDictionary:nil withCommandType:@"disconnect"];
     }
     self.engine = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -1302,15 +1342,15 @@ QNLiveSocketDelegate
     [self hideAllUIView];
     if (self.isAdmin) {
         NSLog(@"stopPKState: %@", self.roomId);
-        [self.socket endPK:self.roomId];
+        [self endPK:self.roomId];
     } else{
         NSLog(@"stopPKState: %@", self.pkRoomId);
-        [self.socket endPK:self.pkRoomId];
+        [self endPK:self.pkRoomId];
     }
 }
 
-#pragma mark - QNPKAlertViewDelegate
-- (void)alertView:(QNPKAlertView *)alertView didSelectedTitleIndex:(NSInteger)titleIndex {
+#pragma mark - QNDialogAlertViewDelegate
+- (void)alertView:(QNDialogAlertView *)alertView didSelectedTitleIndex:(NSInteger)titleIndex {
     NSLog(@"alertView - titleIndex: %ld", titleIndex);
 
     if ([alertView isEqual:_pkNotifyView]) {
@@ -1318,13 +1358,17 @@ QNLiveSocketDelegate
         BOOL accept;
         if (titleIndex == 1) {
             self.liveState = 2;
+            self.pkBgView.hidden = NO;
             accept = YES;
+            if (alertView.userId.length != 0 && alertView.nickName.length != 0) {
+                [self.nickNameArray addObject:@{@"userId":alertView.userId,@"nickname":alertView.nickName}];
+            }
         } else{
             self.liveState = 1;
             accept = NO;
         }
-        [self.socket replyPK:_pkNotifyView.roomId accept:accept];
-        [self.engine stopForwardJobWithJobId:self.jobId];
+        [self replyPK:_pkNotifyView.roomId accept:accept];
+        [self.engine stopForwardJobWithJobId:[NSString stringWithFormat:@"forward-%@", self.userId] delayMillisecond:QN_DELAY_MS];
         self.pkButton.selected = YES;
     }
 }
@@ -1336,8 +1380,9 @@ QNLiveSocketDelegate
     
     if ([listView isEqual:_pkListView]) {
         NSDictionary *dic = _pkListView.listArray[titleIndex];
-        [self.socket startPK:dic[@"id"]];
-        [self.view addSubview:_resultAlertView];
+        self.pkUserId = dic[@"creator"][@"id"];
+        self.pkNickName = dic[@"creator"][@"nickname"];
+        [self startPK:dic[@"id"]];
     }
 }
 
@@ -1346,15 +1391,19 @@ QNLiveSocketDelegate
 - (void)settingsView:(QNLiveSettingsView *)settingsView didSelectedIndex:(NSInteger)titleIndex enable:(BOOL)enable {
     NSLog(@"settingsView - titleIndex: %ld enable: %d", titleIndex, enable);
     if (titleIndex == 0) {
+        self.muteVideo = !enable;
         [self.engine muteVideo:!enable];
     }
     if (titleIndex == 1) {
+        self.muteAudio = !enable;
         [self.engine muteAudio:!enable];
     }
     if (titleIndex == 2) {
+        self.muteSpeaker = !enable;
         [self.engine setMuteSpeaker:!enable];
     }
     if (titleIndex == 3) {
+        self.torchOn = enable;
         [self.engine setTorchOn:enable];
     }
 }
@@ -1380,14 +1429,14 @@ QNLiveSocketDelegate
         NSLog(@"QN_GET_CREATE_ROOM resultDic --- %@", resultDic);
         if (resultDic[@"rooms"] != [NSNull null]) {
             NSArray *array = resultDic[@"rooms"];
-            self.roomId = array[0][@"id"];
-            self.jobId = self.roomId;
-            NSLog(@"QN_GET_CREATE_ROOM jobId --- %@", self.jobId);
-            [self refreshJoinRoom];
+            NSDictionary *dic = array[0];
+            // 存在房间先手动关闭之前的房间
+            [self closeLiveRoom:dic[@"id"]];
         } else{
             [self creatLiveRoom];
         }
     } error:^(NSError * _Nonnull error) {
+        [self.alertContentView removeAlertContentView];
         NSLog(@"QN_GET_CREATE_ROOM error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取创建列表失败 %ld", (long)error.code] bgView:self.view];
@@ -1395,17 +1444,14 @@ QNLiveSocketDelegate
 }
 
 - (void)creatLiveRoom {
-    [QNNetworkRequest requestWithUrl:QN_CREATE_LIVE_ROOM requestType:QNRequestTypePost dic:@{@"userID":self.defaultDic[@"id"], @"roomName":self.roomName} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_CREATE_LIVE_ROOM resultDic --- %@", resultDic);
+    [QNNetworkRequest requestWithUrl:QN_CREATE_ROOM requestType:QNRequestTypePost dic:@{@"userID":self.defaultDic[@"id"], @"roomName":self.roomName, @"roomType":@"pk"} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+        NSLog(@"QN_CREATE_ROOM resultDic --- %@", resultDic);
         if ([resultDic.allKeys containsObject:@"rtcRoomToken"]) {
             self.createResultDic = resultDic;
             self.roomName = resultDic[@"roomName"];
             self.token = resultDic[@"rtcRoomToken"];
             self.roomId = resultDic[@"roomID"];
             
-            self.jobId = self.roomId;
-            NSLog(@"QN_CREATE_LIVE_ROOM jobId --- %@", self.jobId);
-
             if (self.editRoomName.length != 0) {
                 [self editRoomNameChange];
                 self.roomNameLabel.text = self.editRoomName;
@@ -1414,19 +1460,19 @@ QNLiveSocketDelegate
             }
             
             [self.engine joinRoomWithToken:self.token];
-            // socket
-            [self.socket connectWithURL:[NSURL URLWithString:resultDic[@"wsURL"]]];
+            [self.alertContentView removeAlertContentView];
         }
     } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_CREATE_LIVE_ROOM error --- %@", error);
+        [self.alertContentView removeAlertContentView];
+        NSLog(@"QN_CREATE_ROOM error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:[NSString stringWithFormat:@"创建直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
 - (void)refreshJoinRoom {
-    [QNNetworkRequest requestWithUrl:QN_REFRESH_LIVE_ROOM requestType:QNRequestTypePost dic:@{@"roomID":self.roomId} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_REFRESH_LIVE_ROOM resultDic --- %@", resultDic);
+    [QNNetworkRequest requestWithUrl:QN_REFRESH_JOIN_ROOM requestType:QNRequestTypePost dic:@{@"roomID":self.roomId} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+        NSLog(@"QN_REFRESH_JOIN_ROOM resultDic --- %@", resultDic);
         if ([resultDic.allKeys containsObject:@"rtcRoomToken"]) {
             self.createResultDic = resultDic;
             self.roomName = resultDic[@"roomName"];
@@ -1441,50 +1487,56 @@ QNLiveSocketDelegate
             }
 
             [self.engine joinRoomWithToken:self.token];
-            
-            if (!self.pkToken) {
-                // socket
-                [self.socket connectWithURL:[NSURL URLWithString:resultDic[@"wsURL"]]];
-            }
         }
     } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_REFRESH_LIVE_ROOM error --- %@", error);
+        NSLog(@"QN_REFRESH_JOIN_ROOM error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:[NSString stringWithFormat:@"刷新直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
-- (void)closeLiveRoom {
-    [QNNetworkRequest requestWithUrl:QN_CLOSE_LIVE_ROOM requestType:QNRequestTypePost dic:@{@"userID":self.defaultDic[@"id"], @"roomID":self.roomId} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_CLOSE_LIVE_ROOM resultDic --- %@", resultDic);
+- (void)closeLiveRoom:(NSString *)roomId {
+    [QNNetworkRequest requestWithUrl:QN_CLOSE_ROOM requestType:QNRequestTypePost dic:@{@"userID":self.defaultDic[@"id"], @"roomID":roomId} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+        [self creatLiveRoom];
+        NSLog(@"QN_CLOSE_ROOM resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_CLOSE_LIVE_ROOM error --- %@", error);
+        NSLog(@"QN_CLOSE_ROOM error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"关闭直播间失败 %ld", (long)error.code] bgView:self.view];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"关闭上个直播间失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
 - (void)editRoomNameChange {
-    [QNNetworkRequest requestWithUrl:QN_UPDATE_LIVE_PROFILE(self.roomId) requestType:QNRequestTypePut dic:@{@"roomName":self.editRoomName} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_UPDATE_LIVE_PROFILE resultDic --- %@", resultDic);
+    [QNNetworkRequest requestWithUrl:QN_UPDATE_ROOM_PROFILE(self.roomId) requestType:QNRequestTypePut dic:@{@"roomName":self.editRoomName} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+        NSLog(@"QN_UPDATE_ROOM_PROFILE resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_UPDATE_LIVE_PROFILE error --- %@", error);
+        NSLog(@"QN_UPDATE_ROOM_PROFILE error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:[NSString stringWithFormat:@"编辑直播间房间名失败 %ld", (long)error.code] bgView:self.view];
     }];
 }
 
 - (void)enterIMWithRequestToken {
-    [QNNetworkRequest requestWithUrl:QN_IM_USER_TOKEN requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_CREATE_LIVE_ROOM resultDic --- %@", resultDic);
-        if ([resultDic.allKeys containsObject:@"token"]) {
-            [self joinChatRoomWithToken:resultDic[@"token"] userName:self.defaultDic[@"nickname"]];
-        }
-    } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_CREATE_LIVE_ROOM error --- %@", error);
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
-    }];
+    NSString *imageString = self.defaultDic[@"avatar"];
+    if ([imageString length] == 0) {
+        imageString = @"icon_default_avator.png";
+    }
+    NSString *imToken = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_IM_TOKEN"];
+    if (imToken.length == 0) {
+        [QNNetworkRequest requestWithUrl:QN_IM_USER_TOKEN requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+            NSLog(@"live view QN_IM_USER_TOKEN resultDic --- %@", resultDic);
+            if ([resultDic.allKeys containsObject:@"token"]) {
+                [[NSUserDefaults standardUserDefaults] setObject:resultDic[@"token"] forKey:@"QN_USER_IM_TOKEN"];
+                [self joinChatRoomWithToken:imToken userName:self.defaultDic[@"nickname"] avatar:imageString];
+            }
+        } error:^(NSError * _Nonnull error) {
+            NSLog(@"live view QN_IM_USER_TOKEN error --- %@", error);
+            QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+            [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
+        }];
+    } else {
+        [self joinChatRoomWithToken:imToken userName:self.defaultDic[@"nickname"] avatar:imageString];
+    }
 }
 
 - (void)updateAudienceCount {
@@ -1506,12 +1558,7 @@ QNLiveSocketDelegate
     [QNNetworkRequest requestWithUrl:QN_LIVE_ROOMID(self.roomId) requestType:QNRequestTypeGet dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
         NSLog(@"QN_LIVE_ROOMID resultDic --- %@", resultDic);
         if ([resultDic.allKeys containsObject:@"audienceNumber"]) {
-            NSInteger audienceNumber = [resultDic[@"audienceNumber"] integerValue];
-            if (audienceNumber == 0) {
-                self.roomNumberLabel.text = @"";
-            } else{
-                self.roomNumberLabel.text = [NSString stringWithFormat:@"%@", resultDic[@"audienceNumber"]];
-            }
+            self.roomNumberLabel.text = [NSString stringWithFormat:@"%@", resultDic[@"audienceNumber"]];
         }
     } error:^(NSError * _Nonnull error) {
         NSLog(@"QN_LIVE_ROOMID error --- %@", error);
@@ -1522,7 +1569,8 @@ QNLiveSocketDelegate
 
 - (void)roomLabelIsCenter:(BOOL)isCenter {
     CGFloat statusBarHeight = 20;
-    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX) {
+    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX ||
+       QN_iPhone12Min || QN_iPhone12Pro || QN_iPhone12PMax) {
         statusBarHeight = 40;
     }
 
@@ -1586,14 +1634,14 @@ QNLiveSocketDelegate
         } else if (2 == allRenderView.count) {
             [allRenderView[0] mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.left.mas_equalTo(self.renderBackgroundView.mas_left);
-                make.centerY.equalTo(self.renderBackgroundView.mas_centerY);
+                make.top.mas_equalTo(QN_KSCREEN_HEIGHT*4/23);
                 make.width.mas_equalTo(QN_KSCREEN_WIDTH/2);
                 make.height.mas_equalTo(QN_KSCREEN_WIDTH/9*8);
             }];
             
             [allRenderView[1] mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.right.mas_equalTo(self.renderBackgroundView.mas_right);
-                make.centerY.equalTo(self.renderBackgroundView.mas_centerY);
+                make.top.mas_equalTo(QN_KSCREEN_HEIGHT*4/23);
                 make.width.mas_equalTo(QN_KSCREEN_WIDTH/2);
                 make.height.mas_equalTo(QN_KSCREEN_WIDTH/9*8);
             }];
@@ -1639,71 +1687,116 @@ QNLiveSocketDelegate
     [self presentViewController:controller animated:YES completion:nil];
 }
 
-#pragma mark QNLiveSocketDelegate
+#pragma mark IM-socket
 
--(void)qnLiveWebsocketDidConnect:(QNLiveSocket*)socket {
-    NSLog(@"socket did connected");
-    [self.socket joinWithToken:self.defaultDic[@"token"] msgsn:nil];
-}
-
--(void)qnLiveWebsocketDidDisconnect:(QNLiveSocket*)socket error:(NSError*)error {
-    dispatch_async(dispatch_get_main_queue(), ^{
-    [self leaveAction:self.stopButton];
-    NSLog(@"socket did disconnected");
+- (void)startPK:(NSString *)pkRoomID {
+    NSLog(@"startPK: %@", pkRoomID);
+    dispatch_async(self.operationQueue, ^{
+        NSDictionary *dic = @{@"pkRoomID": pkRoomID,
+                              @"rpcID": @"1"};
+        [self sendDictionary:dic withCommandType:@"start-pk"];
     });
 }
 
-//长连接建立结果
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveAuthResponse:(NSDictionary*)dic {
-    NSInteger errorCode = [dic[@"code"] integerValue];
-    NSString *errorMessage = dic[@"error"];
-    if (errorCode != 0) {
-        [self.socket disconnect];
-        NSLog(@"socket did auth error %@",errorMessage);
+- (void)replyPK:(NSString *)pkRoomID accept:(BOOL)accept {
+    NSLog(@"replyPK: %@ accept: %d", pkRoomID, accept);
+    dispatch_async(self.operationQueue, ^{
+        NSDictionary *dic = @{@"reqRoomID": pkRoomID,
+                              @"rpcID": @"3",
+                              @"accept":@(accept)};
+        [self sendDictionary:dic withCommandType:@"answer-pk"];
+    });
+}
+
+- (void)endPK:(NSString *)pkRoomID {
+    NSLog(@"endPK: %@", pkRoomID);
+    dispatch_async(self.operationQueue, ^{
+        NSDictionary *dic = @{@"pkRoomID": pkRoomID,
+                              @"rpcID": @"7"};
+        [self sendDictionary:dic withCommandType:@"end-pk"];
+    });
+}
+
+- (void)didReceiveIMSignalMessage:(RCTextMessage *)message {
+    NSLog(@"content - %@", message.content);
+    if (![message.content isKindOfClass:[NSString class]]) {
+        NSLog(@"invaild message: %@", message);
         return;
     }
-    self.socket.pongTimeout = [(NSNumber *)dic[@"pongTimeout"] integerValue];
-}
 
-// 服务端对发起 PK 请求回应
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveStartPKResponse:(NSDictionary*)dic {
-    NSLog(@"didReceiveStartPKResponse - dic %@", dic);
-}
+    NSRange range = [message.content rangeOfString:@"="];
+    if (range.location == NSNotFound) {
+        NSLog(@"invalid res message, can't find '='");
+        return;
+    }
 
-//有人发来 PK 请求
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveOnPKOffer:(NSDictionary*)dic {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self.pkNotifyView = [[QNPKAlertView alloc] initWithFrame:CGRectMake(0, 0, 300, 200) request:YES content: [NSString stringWithFormat:@"%@请求与你 PK", dic[@"nickname"]]];
+    NSString *type = [message.content substringToIndex:range.location];
+    NSString *body = [message.content substringFromIndex:range.location + 1];
+    NSData *data = [body dataUsingEncoding:NSUTF8StringEncoding];
+    if (!data) {
+        NSLog(@"convert body: %@ to NSData failed", body);
+        return;
+    }
+
+    NSError *error = nil;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:&error];
+    if (error) {
+        NSLog(@"convert data NSDictionary failed, error: %@", error);
+        return;
+    }
+    
+    self.lastReceiveTime = [NSDate date];
+    
+    if ([type isEqualToString:@"ping"]) {
+        dispatch_async(self.operationQueue, ^{
+            [self sendDictionary:nil withCommandType:@"pong"];
+        });
+    }
+        
+    if ([type isEqualToString:@"start-pk-res"]) {
+        NSLog(@"didReceiveStartPKResponse - dic %@", dic);
+        if ([dic.allKeys containsObject:@"code"]) {
+            NSInteger code = [dic[@"code"] integerValue];
+            if (code == 10012) {
+                QNSigleAlertView *alertView = [[QNSigleAlertView alloc] init];
+                [alertView showAlertViewTitle:@"主播已收到其他人的 pk 请求！" bgView:self.view];
+            }
+        }
+    }
+    
+    if ([type isEqualToString:@"on-pk-offer"]) {
+        self.pkNotifyView = [[QNDialogAlertView alloc] initWithFrame:CGRectMake(0, 0, 300, 200) title:@"连麦互动" request:YES content: [NSString stringWithFormat:@"%@请求与你 PK", dic[@"nickname"]] buttonArray:@[@"拒绝 TA", @"开始 PK"]];
         self.pkNotifyView.center = self.view.center;
         self.pkNotifyView.roomId = dic[@"roomID"];
+        self.pkNotifyView.userId = dic[@"userID"];
+        self.pkNotifyView.nickName = dic[@"nickname"];
         self.pkNotifyView.delegate = self;
         [self.view addSubview:_pkNotifyView];
         
         self.isAdmin = YES;
-    });
-}
-
-//回复 PK 请求处理结果
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveAnswerPKResponse:(NSDictionary*)dic {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    }
+    
+    if ([type isEqualToString:@"answer-pk-res"]) {
         NSLog(@"didReceiveAnswerPKResponse - dic %@", dic);
-    });
-}
-
-// PK 请求被回应推送
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveOnPKAnswer:(NSDictionary*)dic {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    }
+    
+    if ([type isEqualToString:@"on-pk-answer"]) {
+        NSLog(@"didReceiveOnPKAnswer - dic %@", dic);
         BOOL accept = [dic[@"accepted"] boolValue];
         if (!accept) {
-            self.resultAlertView = [[QNPKAlertView alloc] initWithFrame:CGRectMake(0, 0, 300, 200) request:NO content:@"主播拒绝了你的 PK 请求"];
+            self.pkUserId = @"";
+            self.pkNickName = @"";
+
+            self.resultAlertView = [[QNDialogAlertView alloc] initWithFrame:CGRectMake(0, 0, 300, 200) title:@"连麦互动" request:NO content:@"主播拒绝了你的 PK 请求" buttonArray:@[@" 好吧 主播好残忍 "]];
             self.liveState = 1;
             self.resultAlertView.center = self.view.center;
             [self.view addSubview:_resultAlertView];
         } else{
             self.isAdmin = NO;
-
             self.layouts = [NSMutableArray array];
-            
+            if (self.pkUserId.length != 0 && self.pkNickName.length != 0) {
+                [self.nickNameArray addObject:@{@"userId":self.pkUserId, @"nickname":self.pkNickName}];
+            }
             // PK 请求被接受
             [self.engine stopForwardJobWithJobId:self.roomId];
             self.liveState = 2;
@@ -1713,56 +1806,162 @@ QNLiveSocketDelegate
             self.pkRoomId = dic[@"rtcRoom"];
             // 进入 PK 主播间
             [self.engine joinRoomWithToken:self.pkToken];
+            self.pkBgView.hidden = NO;
         }
-    });
-}
-
-//结束 PK 返回
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveEndPKResponse:(NSDictionary*)dic {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    }
+    
+    if ([type isEqualToString:@"end-pk-res"]) {
         NSLog(@"didReceiveEndPKResponse - dic %@", dic);
-        [self.engine stopMergeStreamWithJobId:self.roomId];
-
+        self.liveState = 1;
         if (self.isAdmin) {
             NSLog(@"didReceiveEndPKResponse - self.isAdmin");
+            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+            for (NSDictionary *dic in array) {
+                if (![dic.allValues containsObject:self.userId]) {
+                    [self.nickNameArray removeObject:dic];
+                }
+            }
 
-            self.liveState = 1;
+            [self.engine stopMergeStreamWithJobId:self.roomId delayMillisecond:QN_DELAY_MS];
             self.serialNum++;
-            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.roomId, @(self.serialNum)];
+            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
             self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
             self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
-            self.forwardConfig.jobId = self.roomId;
+            self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];
             [self.engine createForwardJobWithConfiguration:self.forwardConfig];
         } else{
+            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+            for (NSDictionary *dic in array) {
+                if (![dic.allValues containsObject:self.pkUserId]) {
+                    [self.nickNameArray removeObject:dic];
+                }
+            }
+            [self.engine stopMergeStreamWithJobId:self.roomId];
             [self.engine leaveRoom];
-            self.liveState = 0;
             [self refreshJoinRoom];
         }
-    });
-}
-
-//结束 PK 通知
--(void)qnLiveWebsocket:(QNLiveSocket*)socket didReceiveOnPKEnd:(NSDictionary*)dic {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    }
+    
+    if ([type isEqualToString:@"on-pk-end"]) {
         NSLog(@"didReceiveOnPKEnd - dic %@", dic);
-        [self.engine stopMergeStreamWithJobId:self.roomId];
-
+        self.liveState = 1;
         if (self.isAdmin) {
             NSLog(@"didReceiveOnPKEnd - self.isAdmin");
+            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+            for (NSDictionary *dic in array) {
+                if (![dic.allValues containsObject:self.userId]) {
+                    [self.nickNameArray removeObject:dic];
+                }
+            }
 
-            self.liveState = 1;
+            [self.engine stopMergeStreamWithJobId:self.roomId delayMillisecond:QN_DELAY_MS];
             self.serialNum++;
-            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.roomId, @(self.serialNum)];
+            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
             self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
             self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
-            self.forwardConfig.jobId = self.roomId;
+            self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];;
             [self.engine createForwardJobWithConfiguration:self.forwardConfig];
         } else{
+            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+            for (NSDictionary *dic in array) {
+                if (![dic.allValues containsObject:self.pkUserId]) {
+                    [self.nickNameArray removeObject:dic];
+                }
+            }
+            [self.engine stopMergeStreamWithJobId:self.roomId];
             [self.engine leaveRoom];
-            self.liveState = 0;
             [self refreshJoinRoom];
         }
+    }
+    
+    if ([type isEqualToString:@"on-pk-timeout"]) {
+        NSLog(@"didReceivePKTimeout - dic %@", dic);
+        if (self.isAdmin) {
+            if ([self.view.subviews containsObject:self.pkNotifyView]) {
+                [self.pkNotifyView hideAlertView];
+            }
+        } else {
+            self.pkUserId = @"";
+            self.pkNickName = @"";
+        }
+        self.resultAlertView = [[QNDialogAlertView alloc] initWithFrame:CGRectMake(0, 0, 300, 200) title:@"连麦互动" request:NO content:@"PK 请求已超时！" buttonArray:@[@" 我知道了 "]];
+        self.resultAlertView.center = self.view.center;
+        [self.view addSubview:_resultAlertView];
+    }
+}
+
+- (void)sendDictionary:(NSDictionary *)dic withCommandType:(NSString *)type {
+    NSString *dicString = @"{}";
+    if (dic) {
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic options:0 error:&error];
+        if (error) {
+            return;
+        }
+        dicString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        if (!dicString) {
+            return;
+        }
+    }
+    NSString *sendString = [NSString stringWithFormat:@"%@=%@", type, dicString];
+    [self sendIMSignalString:sendString];
+}
+
+- (void)sendIMSignalString:(NSString *)string {
+    NSLog(@"sendIMSignal: %@ userId: %@", string, self.userId);
+    RCChatroomWelcome *chatroomMessage = [[RCChatroomWelcome alloc]init];
+    [chatroomMessage setId:self.userId];
+    [self.chatRoomView sendMessage:string pushContent:nil targetId:@"qlive-system" success:^(long messageId) {
+        NSLog(@"messageId:%ld", messageId);
+    } error:^(RCErrorCode nErrorCode, long messageId) {
+        NSLog(@"nErrorCode: %ld messageId: %ld", nErrorCode, messageId);
+    }];
+}
+
+- (void)startTimer {
+    NSLog(@"startTimer");
+
+    if (self.signalTimer) {
+        return;
+    }
+    self.signalTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.operationQueue);
+    dispatch_source_set_timer(self.signalTimer, DISPATCH_TIME_NOW, 0.8 * NSEC_PER_SEC, 0.3 * NSEC_PER_SEC);
+    __weak typeof(self) weakSelf = self;
+    dispatch_source_set_event_handler(self.signalTimer, ^{
+        if (weakSelf.lastReceiveTime) {
+            NSTimeInterval interval = [[NSDate date] timeIntervalSinceDate:weakSelf.lastReceiveTime];
+            if (interval > self.pongTimeout) {
+                [weakSelf stopTimer];
+                return;
+            }
+        }
+
+        if (weakSelf.lastSendTime) {
+            NSTimeInterval interval = [[NSDate date] timeIntervalSinceDate:weakSelf.lastSendTime];
+            if (interval > kQNLiveWebSocketPingInterval) {
+                [self sendDictionary:nil withCommandType:@"ping"];
+                NSLog(@"sendPing");
+                weakSelf.lastSendTime = [NSDate date];
+            }
+        } else {
+            [self sendDictionary:nil withCommandType:@"ping"];
+            NSLog(@"sendPing");
+            weakSelf.lastSendTime = [NSDate date];
+        }
     });
+    dispatch_resume(self.signalTimer);
+}
+
+- (void)stopTimer {
+    NSLog(@"stopTimer");
+
+    if (self.signalTimer) {
+        dispatch_cancel(self.signalTimer);
+        self.signalTimer = nil;
+    }
+
+    self.lastReceiveTime = nil;
+    self.lastSendTime = nil;
 }
 
 @end

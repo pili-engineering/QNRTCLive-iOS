@@ -182,7 +182,7 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "${PODS_ROOT}/QNRTCKit/Pod/iphoneos/HappyDNS.framework"
   install_framework "${PODS_ROOT}/QNRTCKit/Pod/iphoneos/QNRTCKit.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Qiniu/Qiniu.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/jetfire/jetfire.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/HappyDNS/HappyDNS.framework"
@@ -192,7 +192,7 @@ if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${PODS_ROOT}/QNRTCKit/Pod/iphoneos/HappyDNS.framework"
   install_framework "${PODS_ROOT}/QNRTCKit/Pod/iphoneos/QNRTCKit.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Qiniu/Qiniu.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/jetfire/jetfire.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework"
 fi
 if [ "${COCOAPODS_PARALLEL_CODE_SIGN}" == "true" ]; then
   wait

@@ -17,9 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) UIButton *pkButton;
 
-@property (nonatomic, strong) UIButton *microphoneButton;
-@property (nonatomic, strong) UIButton *videoButton;
-
 - (void)setUser:(NSString *)user state:(NSInteger)state;
 @end
 

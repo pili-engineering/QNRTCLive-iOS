@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		35413278F12394C2E657BF14 /* Pods_QNRTCLiveDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CACD1CD4A2D74DFC564751 /* Pods_QNRTCLiveDemo.framework */; };
 		9C1B8D02251DD52800944240 /* RCChatroomSignal.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C1B8D01251DD52800944240 /* RCChatroomSignal.m */; };
-		9C621588251065BA0070D454 /* QNLiveSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C621587251065BA0070D454 /* QNLiveSocket.m */; };
 		9CA24BD1250A2766001186D6 /* RCCRInputBarControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24B8F250A2765001186D6 /* RCCRInputBarControl.m */; };
 		9CA24BD2250A2766001186D6 /* RCCRInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24B91250A2765001186D6 /* RCCRInputView.m */; };
 		9CA24BD3250A2766001186D6 /* RCCREmojiCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24B93250A2765001186D6 /* RCCREmojiCollectionCell.m */; };
@@ -40,6 +39,14 @@
 		9CA24BEC250A2766001186D6 /* RCCRGiftNumberLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24BCC250A2766001186D6 /* RCCRGiftNumberLabel.m */; };
 		9CA24BED250A2766001186D6 /* RCCRGiftListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA24BCF250A2766001186D6 /* RCCRGiftListView.m */; };
 		AA09F8EB2518842700DBD692 /* QNEditAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA09F8EA2518842700DBD692 /* QNEditAlertView.m */; };
+		AA0E376D2581CBA200055F4F /* QNCustomButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0E376C2581CBA200055F4F /* QNCustomButtonView.m */; };
+		AA0E37712581D12800055F4F /* QNVoiceCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0E37702581D12800055F4F /* QNVoiceCollectionViewCell.m */; };
+		AA0E37742581D1DB00055F4F /* select_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = AA0E37732581D1DB00055F4F /* select_bg.png */; };
+		AA0E37832582251100055F4F /* QNAudioUserListView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0E37812582251000055F4F /* QNAudioUserListView.m */; };
+		AA0E37892583220600055F4F /* QNAudioUserModel.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0E37882583220600055F4F /* QNAudioUserModel.m */; };
+		AA52D2732580DB7000CE65FF /* QNAudioRoomViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA52D2722580DB7000CE65FF /* QNAudioRoomViewController.m */; };
+		AA52D2772580DC8900CE65FF /* QNRoomTypeSelectView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA52D2762580DC8900CE65FF /* QNRoomTypeSelectView.m */; };
+		AA80EBB9254AAFAB00B1A4DD /* push_image.png in Resources */ = {isa = PBXBuildFile; fileRef = AA80EBB8254AAFAB00B1A4DD /* push_image.png */; };
 		AA89D4B0253445FE007E8128 /* QNAddCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AA89D4AF253445FE007E8128 /* QNAddCollectionViewCell.m */; };
 		AA89D543253487B6007E8128 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = AA89D539253487B6007E8128 /* unzip.c */; };
 		AA89D544253487B6007E8128 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = AA89D53A253487B6007E8128 /* zip.c */; };
@@ -78,6 +85,7 @@
 		AA9117B52510A0B1006A538C /* QNMyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AA9117B42510A0B1006A538C /* QNMyTableViewCell.m */; };
 		AA9117C12510C593006A538C /* QNSigleAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA9117BC2510C593006A538C /* QNSigleAlertView.m */; };
 		AA9117C42511E8B0006A538C /* QNWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA9117C32511E8B0006A538C /* QNWebViewController.m */; };
+		AAA1D50A258C8BA700C44FE5 /* icon_default_avator.png in Resources */ = {isa = PBXBuildFile; fileRef = AAA1D509258C8BA700C44FE5 /* icon_default_avator.png */; };
 		AAA3EA4725061859000E7BCE /* QNAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA3EA4625061859000E7BCE /* QNAppDelegate.m */; };
 		AAA3EA4D25061859000E7BCE /* QNLiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA3EA4C25061859000E7BCE /* QNLiveViewController.m */; };
 		AAA3EA5025061859000E7BCE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAA3EA4E25061859000E7BCE /* Main.storyboard */; };
@@ -104,7 +112,7 @@
 		AAF9D186250A2F18000254AF /* QNPKUserListView.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D185250A2F18000254AF /* QNPKUserListView.m */; };
 		AAF9D18C250A2F30000254AF /* QNLiveSettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D18B250A2F30000254AF /* QNLiveSettingsView.m */; };
 		AAF9D18F250A3704000254AF /* QNPKListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D18E250A3704000254AF /* QNPKListTableViewCell.m */; };
-		AAF9D192250A373A000254AF /* QNPKAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D191250A373A000254AF /* QNPKAlertView.m */; };
+		AAF9D192250A373A000254AF /* QNDialogAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF9D191250A373A000254AF /* QNDialogAlertView.m */; };
 		D31014B7BCF30EB9320A15E4 /* Pods_QNRTCLiveDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 879BC929DF1DF3835765C07F /* Pods_QNRTCLiveDemoTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -136,8 +144,6 @@
 		879BC929DF1DF3835765C07F /* Pods_QNRTCLiveDemoTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QNRTCLiveDemoTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C1B8D00251DD52800944240 /* RCChatroomSignal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCChatroomSignal.h; sourceTree = "<group>"; };
 		9C1B8D01251DD52800944240 /* RCChatroomSignal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCChatroomSignal.m; sourceTree = "<group>"; };
-		9C621586251065BA0070D454 /* QNLiveSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNLiveSocket.h; sourceTree = "<group>"; };
-		9C621587251065BA0070D454 /* QNLiveSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNLiveSocket.m; sourceTree = "<group>"; };
 		9CA24B8F250A2765001186D6 /* RCCRInputBarControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCRInputBarControl.m; sourceTree = "<group>"; };
 		9CA24B90250A2765001186D6 /* RCCREmojiBoardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCREmojiBoardView.h; sourceTree = "<group>"; };
 		9CA24B91250A2765001186D6 /* RCCRInputView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCRInputView.m; sourceTree = "<group>"; };
@@ -198,6 +204,20 @@
 		9CA24BD0250A2766001186D6 /* RCCRGiftNumberLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCRGiftNumberLabel.h; sourceTree = "<group>"; };
 		AA09F8E92518842700DBD692 /* QNEditAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNEditAlertView.h; sourceTree = "<group>"; };
 		AA09F8EA2518842700DBD692 /* QNEditAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNEditAlertView.m; sourceTree = "<group>"; };
+		AA0E376B2581CBA200055F4F /* QNCustomButtonView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNCustomButtonView.h; sourceTree = "<group>"; };
+		AA0E376C2581CBA200055F4F /* QNCustomButtonView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNCustomButtonView.m; sourceTree = "<group>"; };
+		AA0E376F2581D12800055F4F /* QNVoiceCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNVoiceCollectionViewCell.h; sourceTree = "<group>"; };
+		AA0E37702581D12800055F4F /* QNVoiceCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNVoiceCollectionViewCell.m; sourceTree = "<group>"; };
+		AA0E37732581D1DB00055F4F /* select_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = select_bg.png; sourceTree = "<group>"; };
+		AA0E37812582251000055F4F /* QNAudioUserListView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QNAudioUserListView.m; sourceTree = "<group>"; };
+		AA0E37822582251100055F4F /* QNAudioUserListView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QNAudioUserListView.h; sourceTree = "<group>"; };
+		AA0E37872583220600055F4F /* QNAudioUserModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNAudioUserModel.h; sourceTree = "<group>"; };
+		AA0E37882583220600055F4F /* QNAudioUserModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNAudioUserModel.m; sourceTree = "<group>"; };
+		AA52D2712580DB7000CE65FF /* QNAudioRoomViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNAudioRoomViewController.h; sourceTree = "<group>"; };
+		AA52D2722580DB7000CE65FF /* QNAudioRoomViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNAudioRoomViewController.m; sourceTree = "<group>"; };
+		AA52D2752580DC8900CE65FF /* QNRoomTypeSelectView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNRoomTypeSelectView.h; sourceTree = "<group>"; };
+		AA52D2762580DC8900CE65FF /* QNRoomTypeSelectView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNRoomTypeSelectView.m; sourceTree = "<group>"; };
+		AA80EBB8254AAFAB00B1A4DD /* push_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = push_image.png; sourceTree = "<group>"; };
 		AA89D4AE253445FE007E8128 /* QNAddCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNAddCollectionViewCell.h; sourceTree = "<group>"; };
 		AA89D4AF253445FE007E8128 /* QNAddCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNAddCollectionViewCell.m; sourceTree = "<group>"; };
 		AA89D5332534879C007E8128 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -277,6 +297,7 @@
 		AA9117C02510C593006A538C /* QNSigleAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QNSigleAlertView.h; sourceTree = "<group>"; };
 		AA9117C22511E8B0006A538C /* QNWebViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNWebViewController.h; sourceTree = "<group>"; };
 		AA9117C32511E8B0006A538C /* QNWebViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNWebViewController.m; sourceTree = "<group>"; };
+		AAA1D509258C8BA700C44FE5 /* icon_default_avator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_default_avator.png; sourceTree = "<group>"; };
 		AAA3EA4225061859000E7BCE /* 牛互动.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "牛互动.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAA3EA4525061859000E7BCE /* QNAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNAppDelegate.h; sourceTree = "<group>"; };
 		AAA3EA4625061859000E7BCE /* QNAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNAppDelegate.m; sourceTree = "<group>"; };
@@ -322,8 +343,8 @@
 		AAF9D18B250A2F30000254AF /* QNLiveSettingsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNLiveSettingsView.m; sourceTree = "<group>"; };
 		AAF9D18D250A3704000254AF /* QNPKListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNPKListTableViewCell.h; sourceTree = "<group>"; };
 		AAF9D18E250A3704000254AF /* QNPKListTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNPKListTableViewCell.m; sourceTree = "<group>"; };
-		AAF9D190250A373A000254AF /* QNPKAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNPKAlertView.h; sourceTree = "<group>"; };
-		AAF9D191250A373A000254AF /* QNPKAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNPKAlertView.m; sourceTree = "<group>"; };
+		AAF9D190250A373A000254AF /* QNDialogAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QNDialogAlertView.h; sourceTree = "<group>"; };
+		AAF9D191250A373A000254AF /* QNDialogAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QNDialogAlertView.m; sourceTree = "<group>"; };
 		C987F2925945C4A13162FAEC /* Pods-QNRTCLiveDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QNRTCLiveDemo.release.xcconfig"; path = "Target Support Files/Pods-QNRTCLiveDemo/Pods-QNRTCLiveDemo.release.xcconfig"; sourceTree = "<group>"; };
 		D3B35C849C9965DD58D29084 /* Pods-QNRTCLiveDemoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QNRTCLiveDemoTests.debug.xcconfig"; path = "Target Support Files/Pods-QNRTCLiveDemoTests/Pods-QNRTCLiveDemoTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F7CACD1CD4A2D74DFC564751 /* Pods_QNRTCLiveDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QNRTCLiveDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -376,15 +397,6 @@
 				879BC929DF1DF3835765C07F /* Pods_QNRTCLiveDemoTests.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		9C6215822510652D0070D454 /* socket */ = {
-			isa = PBXGroup;
-			children = (
-				9C621586251065BA0070D454 /* QNLiveSocket.h */,
-				9C621587251065BA0070D454 /* QNLiveSocket.m */,
-			);
-			path = socket;
 			sourceTree = "<group>";
 		};
 		9CA24B8D250A2765001186D6 /* chatRoom */ = {
@@ -524,6 +536,15 @@
 				9CA24BCC250A2766001186D6 /* RCCRGiftNumberLabel.m */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		AA0E3786258321E700055F4F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA0E37872583220600055F4F /* QNAudioUserModel.h */,
+				AA0E37882583220600055F4F /* QNAudioUserModel.m */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		AA89D536253487B6007E8128 /* ZipArchive */ = {
@@ -678,6 +699,8 @@
 				AAA3EAB325064217000E7BCE /* QNListViewController.m */,
 				AAA3EA4B25061859000E7BCE /* QNLiveViewController.h */,
 				AAA3EA4C25061859000E7BCE /* QNLiveViewController.m */,
+				AA52D2712580DB7000CE65FF /* QNAudioRoomViewController.h */,
+				AA52D2722580DB7000CE65FF /* QNAudioRoomViewController.m */,
 				AAA3EA7225062264000E7BCE /* QNLoginViewController.h */,
 				AAA3EA7325062264000E7BCE /* QNLoginViewController.m */,
 				AAA3EAB8250643D6000E7BCE /* QNPersonViewController.h */,
@@ -690,23 +713,26 @@
 				AA9117C32511E8B0006A538C /* QNWebViewController.m */,
 				9CA24B8D250A2765001186D6 /* chatRoom */,
 				AA911761250F81B3006A538C /* Effects */,
-				9C6215822510652D0070D454 /* socket */,
 				AAF9D179250776A1000254AF /* Tools */,
+				AA0E3786258321E700055F4F /* Models */,
+				AAF9D17525077693000254AF /* Views */,
 				AA8BC646251AE88F000D7A28 /* user_agent.html */,
 				AAA3EA512506185E000E7BCE /* Assets.xcassets */,
 				AAA3EA7B25062575000E7BCE /* QNPublicHeader.h */,
+				AA80EBB8254AAFAB00B1A4DD /* push_image.png */,
 				AACFC21C251C84A300CDC26E /* img_avater_0.png */,
 				AACFC216251C84A200CDC26E /* img_avater_1.png */,
 				AACFC21B251C84A300CDC26E /* img_avater_2.png */,
 				AACFC21A251C84A200CDC26E /* img_avater_3.png */,
 				AACFC21D251C84A400CDC26E /* img_avater_4.png */,
 				AACFC225251C8FCE00CDC26E /* img_default_live_cover.png */,
+				AAA1D509258C8BA700C44FE5 /* icon_default_avator.png */,
+				AA0E37732581D1DB00055F4F /* select_bg.png */,
 				AAA3EA562506185E000E7BCE /* Info.plist */,
 				AAA3EA532506185E000E7BCE /* LaunchScreen.storyboard */,
 				AACFC22D251CB16900CDC26E /* logo.png */,
 				AAA3EA572506185E000E7BCE /* main.m */,
 				AAA3EA4E25061859000E7BCE /* Main.storyboard */,
-				AAF9D17525077693000254AF /* Views */,
 			);
 			path = QNRTCLiveDemo;
 			sourceTree = "<group>";
@@ -725,6 +751,8 @@
 			children = (
 				AAF9D17D25077F9B000254AF /* QNRoomUserView.h */,
 				AAF9D17E25077F9B000254AF /* QNRoomUserView.m */,
+				AA0E37822582251100055F4F /* QNAudioUserListView.h */,
+				AA0E37812582251000055F4F /* QNAudioUserListView.m */,
 				AAF9D184250A2F18000254AF /* QNPKUserListView.h */,
 				AAF9D185250A2F18000254AF /* QNPKUserListView.m */,
 				AAF9D18A250A2F30000254AF /* QNLiveSettingsView.h */,
@@ -737,14 +765,20 @@
 				AA91175A250F6C91006A538C /* QNPlayerListTableViewCell.m */,
 				AA89D4AE253445FE007E8128 /* QNAddCollectionViewCell.h */,
 				AA89D4AF253445FE007E8128 /* QNAddCollectionViewCell.m */,
-				AAF9D190250A373A000254AF /* QNPKAlertView.h */,
-				AAF9D191250A373A000254AF /* QNPKAlertView.m */,
+				AAF9D190250A373A000254AF /* QNDialogAlertView.h */,
+				AAF9D191250A373A000254AF /* QNDialogAlertView.m */,
 				AA9117B32510A0B1006A538C /* QNMyTableViewCell.h */,
 				AA9117B42510A0B1006A538C /* QNMyTableViewCell.m */,
 				AA9117C02510C593006A538C /* QNSigleAlertView.h */,
 				AA9117BC2510C593006A538C /* QNSigleAlertView.m */,
 				AA09F8E92518842700DBD692 /* QNEditAlertView.h */,
 				AA09F8EA2518842700DBD692 /* QNEditAlertView.m */,
+				AA52D2752580DC8900CE65FF /* QNRoomTypeSelectView.h */,
+				AA52D2762580DC8900CE65FF /* QNRoomTypeSelectView.m */,
+				AA0E376B2581CBA200055F4F /* QNCustomButtonView.h */,
+				AA0E376C2581CBA200055F4F /* QNCustomButtonView.m */,
+				AA0E376F2581D12800055F4F /* QNVoiceCollectionViewCell.h */,
+				AA0E37702581D12800055F4F /* QNVoiceCollectionViewCell.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -856,6 +890,7 @@
 				AAA3EA552506185E000E7BCE /* LaunchScreen.storyboard in Resources */,
 				AA9117A9250F81B4006A538C /* ComposeMakeup.bundle in Resources */,
 				AACFC21E251C84A400CDC26E /* img_avater_1.png in Resources */,
+				AAA1D50A258C8BA700C44FE5 /* icon_default_avator.png in Resources */,
 				AACFC21F251C84A400CDC26E /* img_avater_3.png in Resources */,
 				AA9117AC250F81B4006A538C /* FilterResource.bundle in Resources */,
 				AA9117A8250F81B4006A538C /* ModelResource.bundle in Resources */,
@@ -864,8 +899,10 @@
 				AACFC220251C84A400CDC26E /* img_avater_2.png in Resources */,
 				AAA3EA522506185E000E7BCE /* Assets.xcassets in Resources */,
 				AACFC229251C8FCE00CDC26E /* img_default_live_cover.png in Resources */,
+				AA0E37742581D1DB00055F4F /* select_bg.png in Resources */,
 				AACFC231251CB16900CDC26E /* logo.png in Resources */,
 				AAA3EA5025061859000E7BCE /* Main.storyboard in Resources */,
+				AA80EBB9254AAFAB00B1A4DD /* push_image.png in Resources */,
 				AACFC222251C84A400CDC26E /* img_avater_4.png in Resources */,
 				AA9117AA250F81B4006A538C /* StickerResource.bundle in Resources */,
 			);
@@ -967,7 +1004,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAA3EA4D25061859000E7BCE /* QNLiveViewController.m in Sources */,
-				9C621588251065BA0070D454 /* QNLiveSocket.m in Sources */,
+				AA52D2732580DB7000CE65FF /* QNAudioRoomViewController.m in Sources */,
 				AAF9D186250A2F18000254AF /* QNPKUserListView.m in Sources */,
 				AA91179C250F81B4006A538C /* BEButtonView.m in Sources */,
 				9CA24BE2250A2766001186D6 /* RCDDanmaku.m in Sources */,
@@ -986,6 +1023,8 @@
 				9CA24BD8250A2766001186D6 /* RCChatroomWelcome.m in Sources */,
 				9CA24BDF250A2766001186D6 /* RCChatroomUserQuit.m in Sources */,
 				AA89D547253487B7007E8128 /* ZipArchive.mm in Sources */,
+				AA0E37712581D12800055F4F /* QNVoiceCollectionViewCell.m in Sources */,
+				AA0E37832582251100055F4F /* QNAudioUserListView.m in Sources */,
 				AA91179F250F81B4006A538C /* BEButtonItemModel.m in Sources */,
 				AA89D4B0253445FE007E8128 /* QNAddCollectionViewCell.m in Sources */,
 				9CA24BD6250A2766001186D6 /* RCChatroomBarrage.m in Sources */,
@@ -1000,6 +1039,7 @@
 				AA09F8EB2518842700DBD692 /* QNEditAlertView.m in Sources */,
 				AA91179A250F81B4006A538C /* BEEffectContentCollectionViewCell.m in Sources */,
 				AA9117A1250F81B4006A538C /* BEModernEffectPickerView.m in Sources */,
+				AA0E37892583220600055F4F /* QNAudioUserModel.m in Sources */,
 				9CA24BD5250A2766001186D6 /* RCChatRoomView.m in Sources */,
 				9CA24BE4250A2766001186D6 /* RCCRUtilities.m in Sources */,
 				9CA24BD7250A2766001186D6 /* RCChatroomGift.m in Sources */,
@@ -1025,10 +1065,12 @@
 				9CA24BE9250A2766001186D6 /* RCCRAudienceModel.m in Sources */,
 				9CA24BD1250A2766001186D6 /* RCCRInputBarControl.m in Sources */,
 				AAA3EA582506185E000E7BCE /* main.m in Sources */,
-				AAF9D192250A373A000254AF /* QNPKAlertView.m in Sources */,
+				AAF9D192250A373A000254AF /* QNDialogAlertView.m in Sources */,
 				AA9117A6250F81B4006A538C /* BEModernStickerPickerView.m in Sources */,
+				AA52D2772580DC8900CE65FF /* QNRoomTypeSelectView.m in Sources */,
 				AA89D590253579CC007E8128 /* QNCircleView.m in Sources */,
 				AAA3EAB725064348000E7BCE /* QNPlayerViewController.m in Sources */,
+				AA0E376D2581CBA200055F4F /* QNCustomButtonView.m in Sources */,
 				AAA3EA7425062264000E7BCE /* QNLoginViewController.m in Sources */,
 				AA91179B250F81B4006A538C /* BEModernFilterCollectionViewCell.m in Sources */,
 				AAF36E8E2530087A00DDF89D /* QNFeedbackViewController.m in Sources */,
@@ -1220,7 +1262,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/QNRTCLiveDemo/Effects",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qbox.QNRTCLiveDemo;
 				PRODUCT_NAME = "牛互动";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1253,7 +1295,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/QNRTCLiveDemo/Effects",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qbox.QNRTCLiveDemo;
 				PRODUCT_NAME = "牛互动";
 				PROVISIONING_PROFILE_SPECIFIER = "";

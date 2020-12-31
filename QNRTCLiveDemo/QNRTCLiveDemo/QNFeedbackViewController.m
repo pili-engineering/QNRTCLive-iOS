@@ -63,7 +63,8 @@ UIImagePickerControllerDelegate
 - (void)layoutInterfaceView {
     CGFloat navigationHeight = 64;
     CGFloat space = 10;
-    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX) {
+    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX ||
+       QN_iPhone12Min || QN_iPhone12Pro || QN_iPhone12PMax) {
         navigationHeight = 88;
         space = 20;
     }
@@ -364,7 +365,7 @@ UIImagePickerControllerDelegate
     if (![self.textView.text isEqualToString:textPlacehodler]) {
         text = self.textView.text;
     }
-    [QNNetworkRequest requestWithUrl:QN_FEEDBACK_POST requestType:QNRequestTypePost dic:@{@"content":text, @"attachement":self.fileName} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+    [QNNetworkRequest requestWithUrl:QN_FEEDBACK_POST requestType:QNRequestTypePost dic:@{@"content":text, @"attachment":self.fileName} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
         NSLog(@"QN_FEEDBACK_POST resultDic --- %@", resultDic);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:@"反馈成功！" bgView:self.view];

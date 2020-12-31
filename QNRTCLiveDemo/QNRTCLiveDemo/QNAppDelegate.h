@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 #define APPSERVER @"http://seallive.qiniuapi.com/"
+#define RCIMAPPKey @"25wehl3u20c0w"
 #define RCIMAPPKey @"qd46yzrfqx8xf"
 
 @interface QNAppDelegate : UIResponder <UIApplicationDelegate>

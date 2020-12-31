@@ -313,6 +313,7 @@ UITextFieldDelegate
     NSURL *url = [NSURL fileURLWithPath:filePath];
     QNWebViewController *webViewController = [[QNWebViewController alloc] init];
     webViewController.url = url;
+    webViewController.titleName = @"用户协议";
     webViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:webViewController animated:YES completion:nil];
 }

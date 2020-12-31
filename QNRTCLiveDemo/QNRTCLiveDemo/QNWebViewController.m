@@ -15,9 +15,8 @@ WKUIDelegate,
 WKNavigationDelegate
 >
 @property (nonatomic, strong) WKWebView *webView;
-@property (nonatomic, strong) UIButton *backButton;
-
 @property (nonatomic, strong) QNReachability *reachability;
+@property (nonatomic, strong) QNSigleAlertView *alertContentView;
 @end
 
 @implementation QNWebViewController
@@ -36,32 +35,51 @@ WKNavigationDelegate
     self.reachability = [QNReachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
     
-    CGFloat space = 20;
-    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX) {
-        space = 40;
+    self.alertContentView = [[QNSigleAlertView alloc] init];
+    [self layoutInterface];
+}
+
+- (void)layoutInterface {
+    CGFloat navigationHeight = 64;
+    CGFloat space = 10;
+    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX ||
+       QN_iPhone12Min || QN_iPhone12Pro || QN_iPhone12PMax) {
+        navigationHeight = 88;
+        space = 20;
     }
     
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, QN_KSCREEN_WIDTH, navigationHeight)];
+    headerView.backgroundColor = QN_COLOR_RGB(30, 139, 255, 1);
+    [self.view addSubview:headerView];
+    UILabel *titleLabel = [[UILabel alloc] init];
+    titleLabel.textAlignment = NSTextAlignmentCenter;
+    titleLabel.font = QN_FONT_REGULAR(16.0);
+    titleLabel.textColor = [UIColor whiteColor];
+    titleLabel.text = _titleName;
+    [titleLabel sizeToFit];
+    [headerView addSubview:titleLabel];
+    [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.mas_equalTo(headerView.mas_centerX);
+        make.centerY.mas_equalTo(headerView.mas_centerY).offset(space);
+    }];
+    
+    UIButton *backButton = [[UIButton alloc] init];
+    [backButton setImage:[UIImage imageNamed:@"get_back"] forState:UIControlStateNormal];
+    [self.view addSubview:backButton];
+    [backButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(headerView.mas_left).offset(22);
+        make.centerY.mas_equalTo(titleLabel.mas_centerY);
+        make.size.mas_equalTo(CGSizeMake(32, 32));
+    }];
+    [backButton addTarget:self action:@selector(getBack) forControlEvents:UIControlEventTouchUpInside];
+
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, space, QN_KSCREEN_WIDTH, QN_KSCREEN_HEIGHT - space) configuration:configuration];
+    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, navigationHeight, QN_KSCREEN_WIDTH, QN_KSCREEN_HEIGHT - navigationHeight) configuration:configuration];
     _webView.UIDelegate = self;
     _webView.navigationDelegate = self;
     _webView.allowsBackForwardNavigationGestures = YES;
     [_webView loadRequest:[NSURLRequest requestWithURL:_url]];
     [self.view addSubview:_webView];
-    
-    self.backButton = [[UIButton alloc] init];
-    [_backButton setImage:[UIImage imageNamed:@"icon_close"] forState:UIControlStateNormal];
-    _backButton.backgroundColor = QN_COLOR_RGB(0, 0, 0, 0.6);
-    _backButton.layer.cornerRadius = 26;
-    _backButton.clipsToBounds = YES;
-    [self.view addSubview:_backButton];
-       
-    [_backButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(self.view.mas_left).mas_offset(20);
-        make.top.mas_equalTo(self.view.mas_top).mas_offset(space);
-        make.size.mas_equalTo(CGSizeMake(52, 52));
-    }];
-    [_backButton addTarget:self action:@selector(getBack) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)reachabilityChanged:(NSNotification *)notification {
@@ -90,15 +108,20 @@ WKNavigationDelegate
 #pragma mark - WKNavigationDelegate
 // 页面开始加载时调用
 - (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
+    [self.alertContentView addAlertContent:@"页面加载中..." bgView:self.view];
 }
 // 页面加载失败时调用
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
+    [self.alertContentView removeAlertContentView];
+    QNSigleAlertView *alertView = [[QNSigleAlertView alloc] init];
+    [alertView showAlertViewTitle:@"页面加载失败！！！" bgView:self.view];
 }
 // 当内容开始返回时调用
 - (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
 }
 // 页面加载完成之后调用
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    [self.alertContentView removeAlertContentView];
 }
 // 接收到服务器跳转请求即服务重定向时之后调用
 - (void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {

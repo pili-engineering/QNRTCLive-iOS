@@ -91,7 +91,7 @@ static int clickPraiseBtnTimes  = 0 ;
         
         //  底部按钮
         [self addSubview:self.bottomBtnContentView];
-        [self.bottomBtnContentView setFrame:CGRectMake(0, size.height - 50, size.width-100, 50)];
+        [self.bottomBtnContentView setFrame:CGRectMake(0, size.height - 56, size.width, 50)];
         [self.bottomBtnContentView setBackgroundColor:[UIColor clearColor]];
         
         if (self.model.liveMode != RCCRLiveModeHost) {
@@ -101,7 +101,7 @@ static int clickPraiseBtnTimes  = 0 ;
         if (self.model.liveMode != RCCRLiveModeHost) {
             [self.bottomBtnContentView addSubview:self.danmakuBtn];
         }
-        [self.danmakuBtn setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35*3 - 10*4, 10, 35, 35)];
+        [self.danmakuBtn setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35*4 - 10*4, 10, 35, 35)];
         [self.danmakuBtn setBackgroundColor:[UIColor blackColor]];
         [self.danmakuBtn.layer setCornerRadius:35/2];
         [self.danmakuBtn.layer setMasksToBounds:YES];
@@ -110,12 +110,12 @@ static int clickPraiseBtnTimes  = 0 ;
             [self.bottomBtnContentView addSubview:self.giftBtn];
         }
         
-        [self.giftBtn setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35*2 - 10*3, 10, 35, 35)];
+        [self.giftBtn setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35*3 - 10*3, 10, 35, 35)];
         
         if (self.model.liveMode != RCCRLiveModeHost) {
             [self.bottomBtnContentView addSubview:self.praiseBtn];
         }
-        [self.praiseBtn setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35 - 10*2, 10, 35, 35)];
+        [self.praiseBtn setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35*2- 10*2, 10, 35, 35)];
         [self addSubview:self.giftListView];
         [self.giftListView setHidden:YES];
         [self.giftListView setFrame:CGRectMake(10, size.height, size.width - 20, bottomExtraDistance > 0 ? 274 : 240)];
@@ -130,6 +130,14 @@ static int clickPraiseBtnTimes  = 0 ;
                [giftArr addObject:giftModel];
            }
            [self.giftListView setModelArray:giftArr];
+        
+        if (self.model.liveMode != RCCRLiveModeHost) {
+            [self.bottomBtnContentView addSubview:self.closeButton];
+        }
+        [self.closeButton setFrame:CGRectMake(self.bottomBtnContentView.frame.size.width - 35 - 10, 10, 35, 35)];
+        [self.closeButton setBackgroundColor:QN_COLOR_RGB(0, 0, 0, 0.8)];
+        [self.closeButton.layer setCornerRadius:35/2];
+        [self.closeButton.layer setMasksToBounds:YES];
         
         [self registerClass:[RCCRTextMessageCell class]forCellWithReuseIdentifier:textCellIndentifier];
         [self registerClass:[RCCRTextMessageCell class]forCellWithReuseIdentifier:startAndEndCellIndentifier];
@@ -196,14 +204,28 @@ static int clickPraiseBtnTimes  = 0 ;
  送礼物按钮事件
  */
 - (void)giftBtnPressed:(id)sender {
+    UIButton *button = sender;
+    button.selected = !button.selected;
     if ([[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] isLogin]) {
-        CGRect frame = self.giftListView.frame;
-        frame.origin.y -= frame.size.height;
-        [self.giftListView setHidden:NO];
-        __weak __typeof(&*self)weakSelf = self;
-        [UIView animateWithDuration:0.2 animations:^{
-            [weakSelf.giftListView setFrame:frame];
-        } completion:nil];
+        if (button.selected) {
+            CGRect frame = self.giftListView.frame;
+            frame.origin.y -= frame.size.height;
+            [self.giftListView setHidden:NO];
+            __weak __typeof(&*self)weakSelf = self;
+            [UIView animateWithDuration:0.2 animations:^{
+                [weakSelf.giftListView setFrame:frame];
+            } completion:nil];
+        } else {
+            CGFloat height = self.bounds.size.height;
+            CGRect frame = self.giftListView.frame;
+            frame.origin.y = height;
+            __weak __typeof(&*self)weakSelf = self;
+            [UIView animateWithDuration:0.2 animations:^{
+                [weakSelf.giftListView setFrame:frame];
+            } completion:^(BOOL finished) {
+                [self.giftListView setHidden:YES];
+            }];
+        }
     } else {
         __weak __typeof(&*self)weakSelf = self;
         [UIView animateWithDuration:0.2 animations:^{
@@ -398,31 +420,39 @@ static int clickPraiseBtnTimes  = 0 ;
         if (self.forbidGiftAinimation) {
             return;
         }
-        weakSelf.showGiftView = [[UIView alloc] initWithFrame:CGRectMake(-150, 100, 160, 50)];
+        weakSelf.showGiftView = [[UIView alloc] initWithFrame:CGRectMake(-150, 100, 180, 50)];
         weakSelf.showGiftView.layer.cornerRadius = 25;
-        UIImageView *headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 48, 48)];
-        [headerImageView setBackgroundColor:[UIColor redColor]];
+        UIImageView *headerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(1, 1, 48, 48)];
         [headerImageView.layer setCornerRadius:24];
-        UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, 2, 56, 20)];
+        [headerImageView.layer setMasksToBounds:YES];
+        if ([userInfo.portraitUri hasPrefix:@"http"]) {
+            [headerImageView sd_setImageWithURL:[NSURL URLWithString:userInfo.portraitUri]];
+        } else{
+            if (userInfo.portraitUri.length != 0) {
+                headerImageView.image = [UIImage imageNamed:userInfo.portraitUri];
+            }
+        }
+        
+        UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, 2, 76, 20)];
         [nameLabel setNumberOfLines:0];
         [nameLabel setText:userInfo.name];
         [nameLabel setFont:[UIFont systemFontOfSize:12]];
         [nameLabel setTextColor:[UIColor whiteColor]];
-        [nameLabel setTextAlignment:NSTextAlignmentCenter];
+        [nameLabel setTextAlignment:NSTextAlignmentLeft];
         [weakSelf.showGiftView addSubview:nameLabel];
-        UILabel *gifName = [[UILabel alloc] initWithFrame:CGRectMake(50, 25, 56, 20)];
+        UILabel *gifName = [[UILabel alloc] initWithFrame:CGRectMake(50, 25, 76, 20)];
         NSString *name = [self getGifName:giftModel.giftId];
         [gifName setText:name];
         [gifName setTextColor:[UIColor yellowColor]];
         [gifName setFont:[UIFont systemFontOfSize:12]];
         [weakSelf.showGiftView addSubview:gifName];
-        [headerImageView setImage:[UIImage imageNamed:[NSString stringWithFormat:@"audience%@",userInfo.portraitUri]]];
+
         [weakSelf.showGiftView addSubview:headerImageView];
-        UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(100, 0, 50, 50)];
-        [weakSelf.showGiftView setBackgroundColor:[UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.4]];
+        UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(120, 0, 50, 50)];
+        [weakSelf.showGiftView setBackgroundColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.3]];
         [weakSelf.showGiftView  addSubview:imageView];
         imageView.image = [UIImage imageNamed:giftModel.giftImageName];
-        weakSelf.giftNumberLbl = [[RCCRGiftNumberLabel alloc] initWithFrame:CGRectMake(160, 0, 100, 50)];
+        weakSelf.giftNumberLbl = [[RCCRGiftNumberLabel alloc] initWithFrame:CGRectMake(180, 0, 100, 50)];
         weakSelf.giftNumberLbl.outLineWidth = 5;
         weakSelf.giftNumberLbl.outLinetextColor = [UIColor grayColor];
         weakSelf.giftNumberLbl.labelTextColor = [UIColor orangeColor];
@@ -630,6 +660,39 @@ static int clickPraiseBtnTimes  = 0 ;
     
 }
 
+/*
+ 发送消息给 qlive-system
+ */
+- (void)sendMessage:(NSString *)message
+        pushContent:(NSString *)pushContent
+           targetId:(NSString *)targetId
+            success:(void (^)(long messageId))successBlock
+              error:(void (^)(RCErrorCode nErrorCode, long messageId))errorBlock {
+    if (targetId == nil) {
+        return;
+    }
+    RCTextMessage *textMessage = [RCTextMessage messageWithContent:message];
+    [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] sendMessage:ConversationType_PRIVATE targetId:targetId content:textMessage pushContent:pushContent pushData:nil success:^(long messageId) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            RCMessage *message = [[RCMessage alloc] initWithType:ConversationType_PRIVATE
+                                                        targetId:targetId
+                                                       direction:MessageDirection_SEND
+                                                       messageId:messageId
+                                                         content:textMessage];
+            message.content.senderUserInfo = [RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo;
+        });
+        if (successBlock) {
+            successBlock(messageId);
+        }
+    } error:^(RCErrorCode nErrorCode, long messageId) {
+        NSLog(@"发送失败，errorcode is: %ld",(long)nErrorCode);
+        if (errorBlock) {
+            errorBlock(nErrorCode, messageId);
+        }
+    }];
+    
+}
+
 #pragma mark <UIScrollViewDelegate,UICollectionViewDataSource>
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView
@@ -716,6 +779,13 @@ static int clickPraiseBtnTimes  = 0 ;
             }
         });
     }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([rcMessage.senderUserId isEqualToString:@"qlive-system"]) {
+            if ([self.delegate respondsToSelector:@selector(didReceiveIMSignalMessage:)]) {
+                [self.delegate didReceiveIMSignalMessage:rcMessage.content];
+            }
+        }
+    });
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
@@ -777,6 +847,7 @@ static int clickPraiseBtnTimes  = 0 ;
         [UIView animateWithDuration:0.2 animations:^{
             [weakSelf.giftListView setFrame:frame];
         } completion:^(BOOL finished) {
+            self.giftBtn.selected = NO;
             [weakSelf.giftListView setHidden:YES];
         }];
     }
@@ -854,6 +925,15 @@ static int clickPraiseBtnTimes  = 0 ;
         [_praiseBtn setImage:[UIImage imageNamed:@"heartIcon"] forState:UIControlStateNormal];
     }
     return _praiseBtn;
+}
+
+- (UIButton *)closeButton {
+    if (!_closeButton) {
+        _closeButton = [[UIButton alloc] init];
+        [_closeButton setImage:[UIImage imageNamed:@"icon_close"] forState:UIControlStateNormal];
+    }
+    return _closeButton;
+
 }
 
 - (UIView *)messageContentView {
