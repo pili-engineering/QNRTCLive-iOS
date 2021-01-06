@@ -1102,9 +1102,23 @@ QNDialogAlertViewDelegate
     }];
 
     [self disconnect];
+    
+    if (![self.userId isEqualToString:self.createrId]) {
+        [self leaveRoom];
+    }
     self.engine = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)leaveRoom {
+    [QNNetworkRequest requestWithUrl:QN_LEAVE_LIVE_ROOM requestType:QNRequestTypePost dic:@{@"userID":self.defaultDic[@"id"], @"roomID":self.roomId} header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+        NSLog(@"QN_LEAVE_LIVE_ROOM resultDic --- %@", resultDic);
+    } error:^(NSError * _Nonnull error) {
+        NSLog(@"QN_LEAVE_LIVE_ROOM error --- %@", error);
+        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"离开直播间失败 %ld", (long)error.code] bgView:self.view];
+    }];
 }
 
 - (void)stopLianmai:(UIButton *)button {
@@ -1268,6 +1282,7 @@ QNDialogAlertViewDelegate
         if ([resultDic.allKeys containsObject:@"code"]) {
             NSInteger code = [resultDic[@"code"] integerValue];
             if (code == 409004) {
+                [self.alertContentView removeAlertContentView];
                 QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
                 [sigleView showAlertViewTitle:[NSString stringWithFormat:@"用户正在观看，无法直播 %ld", code] bgView:self.view];
             }
@@ -1310,6 +1325,7 @@ QNDialogAlertViewDelegate
         [self creatAudioRoom];
         NSLog(@"QN_CLOSE_ROOM resultDic --- %@", resultDic);
     } error:^(NSError * _Nonnull error) {
+        [self.alertContentView removeAlertContentView];
         NSLog(@"QN_CLOSE_ROOM error --- %@", error);
         QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
         [sigleView showAlertViewTitle:[NSString stringWithFormat:@"关闭上个直播间失败 %ld", (long)error.code] bgView:self.view];
