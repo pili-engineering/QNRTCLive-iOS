@@ -40,6 +40,9 @@
 #define QN_iPhoneXR ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(828, 1792), [[UIScreen mainScreen] currentMode].size) : NO)
 #define QN_iPhoneXSMAX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1242, 2688), [[UIScreen mainScreen] currentMode].size) : NO)
 #define QN_iPhoneP ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1242, 2208), [[UIScreen mainScreen] currentMode].size) : NO)
+#define QN_iPhone12Min ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1080, 2340), [[UIScreen mainScreen] currentMode].size) : NO)
+#define QN_iPhone12Pro ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1170, 2532), [[UIScreen mainScreen] currentMode].size) : NO)
+#define QN_iPhone12PMax ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1284, 2778), [[UIScreen mainScreen] currentMode].size) : NO)
 
 #define QN_REQUEST_HOST @"https://qlive-api.qnsdk.com"
 
@@ -48,11 +51,11 @@
 #define QN_USE_CODE_LOGIN [NSString stringWithFormat:@"%@/v1/login?logintype=smscode", QN_REQUEST_HOST]
 #define QN_USER_EXIT [NSString stringWithFormat:@"%@/v1/logout", QN_REQUEST_HOST]
 
-#define QN_ENTER_LIVE_ROOM [NSString stringWithFormat:@"%@/v1/enter_room", QN_REQUEST_HOST]
+#define QN_ENTER_ROOM [NSString stringWithFormat:@"%@/v1/enter_room", QN_REQUEST_HOST]
 #define QN_LEAVE_LIVE_ROOM [NSString stringWithFormat:@"%@/v1/leave_room", QN_REQUEST_HOST]
-#define QN_CREATE_LIVE_ROOM [NSString stringWithFormat:@"%@/v1/rooms", QN_REQUEST_HOST]
-#define QN_CLOSE_LIVE_ROOM [NSString stringWithFormat:@"%@/v1/close_room", QN_REQUEST_HOST]
-#define QN_REFRESH_LIVE_ROOM [NSString stringWithFormat:@"%@/v1/refresh_room", QN_REQUEST_HOST]
+#define QN_CREATE_ROOM [NSString stringWithFormat:@"%@/v1/rooms", QN_REQUEST_HOST]
+#define QN_CLOSE_ROOM [NSString stringWithFormat:@"%@/v1/close_room", QN_REQUEST_HOST]
+#define QN_REFRESH_JOIN_ROOM [NSString stringWithFormat:@"%@/v1/refresh_room", QN_REQUEST_HOST]
 #define QN_IM_USER_TOKEN [NSString stringWithFormat:@"%@/v1/im_user_token", QN_REQUEST_HOST]
 
 #define QN_FEEDBACK_POST [NSString stringWithFormat:@"%@/v1/feedbacks", QN_REQUEST_HOST]
@@ -60,7 +63,7 @@
 
 // put
 #define QN_UPDATE_PROFILE [NSString stringWithFormat:@"%@/v1/profile", QN_REQUEST_HOST]
-#define QN_UPDATE_LIVE_PROFILE(roomId) [NSString stringWithFormat:@"%@/v1/rooms/%@", QN_REQUEST_HOST, roomId]
+#define QN_UPDATE_ROOM_PROFILE(roomId) [NSString stringWithFormat:@"%@/v1/rooms/%@", QN_REQUEST_HOST, roomId]
 
 // get
 #define QN_GET_LIVE_ROOMS [NSString stringWithFormat:@"%@/v1/rooms", QN_REQUEST_HOST]
@@ -90,6 +93,7 @@
 #import <HappyDNS/HappyDNS.h>
 #import <MJRefresh/MJRefresh.h>
 #import <QiniuSDK.h>
+#import <SDWebImage/SDWebImage.h>
 
 #endif
 

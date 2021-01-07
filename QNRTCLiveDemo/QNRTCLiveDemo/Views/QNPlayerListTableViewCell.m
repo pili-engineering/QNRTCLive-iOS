@@ -78,8 +78,10 @@
     self.nameLabel.text = dic[@"name"];
     NSNumber *number = dic[@"audienceNumber"];
     self.countLabel.text = [NSString stringWithFormat:@"观看人数：%@", number];
-    if ([dic[@"status"] isEqualToString:@"pk"]) {
+    if ([dic[@"status"] isEqualToString:@"PK"]) {
         self.tagLabel.text = @"连麦 PK";
+    } else if ([dic[@"status"] isEqualToString:@"voiceLive"]) {
+        self.tagLabel.text = @"语音聊天室";
     } else{
         self.tagLabel.text = @"单主播直播";
     }

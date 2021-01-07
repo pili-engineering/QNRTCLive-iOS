@@ -68,6 +68,7 @@ FOUNDATION_EXPORT NSString *const RCCRConnectChangeNotification;
  */
 - (void)connectRongCloudWithToken:(NSString *)token
                          userName:(NSString *)userName
+                      portraitUri:(NSString *)portraitUri
                           success:(void (^)(NSString *userId))successBlock
                             error:(void (^)(RCConnectErrorCode status))errorBlock
                    tokenIncorrect:(void (^)(void))tokenIncorrectBlock;

@@ -71,8 +71,8 @@ BEModernFilterPickerViewDelegate>
             make.top.equalTo(self.mas_top).with.offset(-20);
 //            make.bottom.equalTo(self.vBackground.mas_top).with.offset(-10);
             make.left.mas_equalTo(self.mas_left).mas_offset(20);
+            make.right.mas_equalTo(self.mas_right).mas_offset(-20);
             make.height.mas_equalTo(60);
-            make.width.mas_equalTo(self.bounds.size.width * 0.7);
         }];
         
         [self.categoryView mas_makeConstraints:^(MASConstraintMaker *make) {

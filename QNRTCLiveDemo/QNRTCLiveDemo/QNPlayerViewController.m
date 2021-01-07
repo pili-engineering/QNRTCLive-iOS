@@ -12,6 +12,7 @@
 #import "RCChatroomWelcome.h"
 #import "RCCRRongCloudIMManager.h"
 #import "RCChatroomSignal.h"
+#import "RCChatroomUserQuit.h"
 
 static NSString *playStatus[] = {
     @"PLPlayerStatusUnknow",
@@ -27,10 +28,6 @@ static NSString *playStatus[] = {
     @"PLPlayerStatusCompleted"
 };
 
-static NSString *SIGNAL_STREAMER_SWITCH_TO_BACKGROUND = @"streamer_switch_to_backstage";
-
-static NSString *SIGNAL_STREAMER_BACK_TO_LIVING = @"streamer_back_to_living";
-
 @interface QNPlayerViewController ()
 <
 UIGestureRecognizerDelegate,
@@ -45,7 +42,6 @@ RCChatRoomViewDelegate
 @property (nonatomic, strong) UIButton *listButton;
 @property (nonatomic, strong) UILabel *roomNumberLabel;
 @property (nonatomic, strong) UIButton *commentButton;
-@property (nonatomic, strong) UIButton *exitButton;
 
 @property (nonatomic, strong) NSDictionary *defaultDic;
 
@@ -54,10 +50,11 @@ RCChatRoomViewDelegate
 // IM
 @property (nonatomic, strong) RCChatRoomView * chatRoomView;
 @property (nonatomic, strong) RCCRLiveModel * model;
-@property (nonatomic, strong) UIImageView *backImage;
 
 @property (nonatomic, strong) QNReachability *reachability;
 @property (nonatomic, assign) BOOL isPK;
+
+@property (nonatomic, copy) NSString *userId;
 
 @end
 
@@ -73,7 +70,8 @@ RCChatRoomViewDelegate
     [self.reachability startNotifier];
     
     self.defaultDic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
-    
+    self.userId = self.defaultDic[@"id"];
+
     [self setupPlayer];
     
     [self layoutInterfaceView];
@@ -117,10 +115,7 @@ RCChatRoomViewDelegate
     self.player.delegate = self;
     self.player.playerView.frame = self.view.bounds;
     self.player.playerView.contentMode = UIViewContentModeScaleAspectFill;
-    
-    self.backImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"creator_leave_temporarily"]];
-    self.backImage.frame = self.player.playerView.bounds;
-        
+            
     // 是否开启重连，默认为 NO
     self.player.autoReconnectEnable = YES;
     [self.view insertSubview:_player.playerView atIndex:0];
@@ -214,7 +209,8 @@ RCChatRoomViewDelegate
 
 - (void)layoutInterfaceView {
     CGFloat statusBarHeight = 20;
-    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX) {
+    if(QN_iPhoneX || QN_iPhoneXR || QN_iPhoneXSMAX ||
+       QN_iPhone12Min || QN_iPhone12Pro || QN_iPhone12PMax) {
         statusBarHeight = 40;
     }
 
@@ -253,21 +249,6 @@ RCChatRoomViewDelegate
         make.bottom.mas_equalTo(self.listButton.mas_bottom).offset(-10);
         make.height.mas_equalTo(22);
     }];
-    
-    self.exitButton = [[UIButton alloc] init];
-    [_exitButton setImage:[UIImage imageNamed:@"icon_close"] forState:UIControlStateNormal];
-    [self.view addSubview:_exitButton];
-    
-    CGFloat bottomExtraDistance  = 20;
-    if (@available(iOS 11.0, *)) {
-        bottomExtraDistance = [self getIPhonexExtraBottomHeight];
-    }
-    [_exitButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.mas_equalTo(self.view.mas_right).mas_offset(-20);
-        make.bottom.mas_equalTo(self.view.mas_bottom).offset(-bottomExtraDistance);
-        make.size.mas_equalTo(CGSizeMake(52, 52));
-    }];
-    [_exitButton addTarget:self action:@selector(getback) forControlEvents:UIControlEventTouchUpInside];
 }
 
 # pragma mark - actions
@@ -281,6 +262,14 @@ RCChatRoomViewDelegate
     _timer = nil;
     
     [self leaveRoom];
+    
+    RCChatroomUserQuit *quitChatroomMessage = [[RCChatroomUserQuit alloc]init];
+    [quitChatroomMessage setId:self.userId];
+    [self.chatRoomView sendMessage:quitChatroomMessage pushContent:nil success:^(long messageId) {
+        NSLog(@"success messageId: %ld", messageId);
+    } error:^(RCErrorCode nErrorCode, long messageId) {
+        NSLog(@"quitChatroomMessage nErrorCode: %ld messageId: %ld", nErrorCode, messageId);
+    }];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kQNReachabilityChangedNotification object:nil];
 
@@ -314,12 +303,7 @@ RCChatRoomViewDelegate
         NSLog(@"QN_LIVE_ROOMID resultDic --- %@", resultDic);
         
         if ([resultDic.allKeys containsObject:@"audienceNumber"]) {
-            NSInteger audienceNumber = [resultDic[@"audienceNumber"] integerValue];
-            if (audienceNumber == 0) {
-                self.roomNumberLabel.text = @"";
-            } else{
-                self.roomNumberLabel.text = [NSString stringWithFormat:@"%@", resultDic[@"audienceNumber"]];
-            }
+            self.roomNumberLabel.text = [NSString stringWithFormat:@"%@", resultDic[@"audienceNumber"]];
             if ([resultDic.allKeys containsObject:@"status"]) {
                 if ([resultDic[@"status"] isEqualToString:@"PK"]) {
                     self.isPK = YES;
@@ -333,7 +317,7 @@ RCChatRoomViewDelegate
             if ([resultDic[@"code"] longValue] == 404002) {
                 
                 QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-                NSString *alertContent = @"房间已关闭，直播结束啦！";
+                NSString *alertContent = @"当前直播已结束！";
                 [sigleView showAlertViewTitle:alertContent bgView:self.view];
                 
                 __weak typeof(self)weakSelf = self;
@@ -368,6 +352,7 @@ RCChatRoomViewDelegate
     self.chatRoomView = [[RCChatRoomView alloc] initWithFrame:CGRectMake(0,[UIScreen mainScreen].bounds.size.height - (237 +50)  - bottomExtraDistance,[UIScreen mainScreen].bounds.size.width, 237+50) model:self.model];
     self.chatRoomView.delegate = self;
     
+    [self.chatRoomView.closeButton addTarget:self action:@selector(getback) forControlEvents:UIControlEventTouchUpInside];
     [self.view insertSubview:self.chatRoomView atIndex:1];
     UITapGestureRecognizer *resetBottomTapGesture =[[UITapGestureRecognizer alloc]
                                       initWithTarget:self
@@ -375,16 +360,26 @@ RCChatRoomViewDelegate
              resetBottomTapGesture.delegate = self;
     [self.view addGestureRecognizer:resetBottomTapGesture];
     
-    [QNNetworkRequest requestWithUrl:QN_IM_USER_TOKEN requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-        NSLog(@"QN_IM_USER_TOKEN resultDic --- %@", resultDic);
-        if ([resultDic.allKeys containsObject:@"token"]) {
-            [self joinChatRoomWithToken:resultDic[@"token"] userName:self.defaultDic[@"nickname"]];
-        }
-    } error:^(NSError * _Nonnull error) {
-        NSLog(@"QN_IM_USER_TOKEN error --- %@", error);
-        QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-        [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
-    }];
+    NSString *imageString = self.defaultDic[@"avatar"];
+    if ([imageString length] == 0) {
+        imageString = @"icon_default_avator.png";
+    }
+    NSString *imToken = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_IM_TOKEN"];
+    if (imToken.length == 0) {
+        [QNNetworkRequest requestWithUrl:QN_IM_USER_TOKEN requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+            NSLog(@"play view QN_IM_USER_TOKEN resultDic --- %@", resultDic);
+            if ([resultDic.allKeys containsObject:@"token"]) {
+                [[NSUserDefaults standardUserDefaults] setObject:resultDic[@"token"] forKey:@"QN_USER_IM_TOKEN"];
+                [self joinChatRoomWithToken:resultDic[@"token"] userName:self.defaultDic[@"nickname"] avatar:imageString];
+            }
+        } error:^(NSError * _Nonnull error) {
+            NSLog(@"player view QN_IM_USER_TOKEN error --- %@", error);
+            QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+            [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
+        }];
+    } else {
+        [self joinChatRoomWithToken:imToken userName:self.defaultDic[@"nickname"] avatar:imageString];
+    }
 }
 
 - (float)getIPhonexExtraBottomHeight {
@@ -415,26 +410,42 @@ RCChatRoomViewDelegate
     return YES;
 }
 
-- (void)joinChatRoomWithToken:(NSString *)token userName:(NSString *)userName {
-    [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] connectRongCloudWithToken:token userName:userName success:^(NSString *userId) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-             [[RCIMClient sharedRCIMClient] joinChatRoom:self.model.roomId messageCount:-1 success:^{
-                 RCChatroomWelcome *joinChatroomMessage = [[RCChatroomWelcome alloc]init];
-                 [joinChatroomMessage setId:[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager].currentUserInfo.userId];
-                 [self.chatRoomView sendMessage:joinChatroomMessage pushContent:nil success:nil error:nil];
-             } error:^(RCErrorCode status) {
-                 dispatch_async(dispatch_get_main_queue(), ^{
-                     [self.chatRoomView alertErrorWithTitle:@"提示" message:@"加入聊天室失败" ok:@"知道了"];
-                 });
-             }];
-        });
-    } error:^(RCConnectErrorCode status) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-        });
-    } tokenIncorrect:^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-        });
-    }];
+- (void)joinChatRoomWithToken:(NSString *)token userName:(NSString *)userName avatar:(NSString *)avatar{
+    RCConnectionStatus status = [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] getRongCloudConnectionStatus];
+    if (status != ConnectionStatus_Connected) {
+        [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] connectRongCloudWithToken:token userName:userName portraitUri:avatar success:^(NSString *userId) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                 [[RCIMClient sharedRCIMClient] joinChatRoom:self.model.roomId messageCount:-1 success:^{
+                     RCChatroomWelcome *joinChatroomMessage = [[RCChatroomWelcome alloc]init];
+                     [joinChatroomMessage setId:self.userId];
+                     [self.chatRoomView sendMessage:joinChatroomMessage pushContent:nil success:nil error:nil];
+                 } error:^(RCErrorCode status) {
+                     dispatch_async(dispatch_get_main_queue(), ^{
+                         [self.chatRoomView alertErrorWithTitle:@"提示" message:@"加入聊天室失败" ok:@"知道了"];
+                     });
+                 }];
+            });
+        } error:^(RCConnectErrorCode status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"status --- %ld", status);
+            });
+        } tokenIncorrect:^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"tokenIncorrect");
+            });
+        }];
+    } else {
+        [[RCIMClient sharedRCIMClient] joinChatRoom:self.model.roomId messageCount:-1 success:^{
+            RCChatroomWelcome *joinChatroomMessage = [[RCChatroomWelcome alloc]init];
+            [joinChatroomMessage setId:self.userId];
+            [self.chatRoomView sendMessage:joinChatroomMessage pushContent:nil success:nil error:nil];
+        } error:^(RCErrorCode status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.chatRoomView alertErrorWithTitle:@"提示" message:@"加入聊天室失败" ok:@"知道了"];
+            });
+        }];
+
+    }
 }
 
 
@@ -456,32 +467,10 @@ RCChatRoomViewDelegate
     }
 }
 
--(void)didReceiveMessageUserBackground:(RCChatroomSignal *)model {
-    NSDictionary * creator = self.dic[@"creator"];
-    // 主播进入后台
-    if ([model.senderUserInfo.userId isEqualToString:creator[@"id"]]) {
-        if ([model.signal isEqualToString:SIGNAL_STREAMER_SWITCH_TO_BACKGROUND]) {
-            if (self.isPK) {
-                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-                NSString *alertContent = @"主播进入后台";
-                [sigleView showAlertViewTitle:alertContent bgView:self.view];
-            }else {
-                [self.player.playerView addSubview:self.backImage];
-            }
-            
-        }else if ([model.signal isEqualToString:SIGNAL_STREAMER_BACK_TO_LIVING]){
-            if (self.isPK) {
-                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-                NSString *alertContent = @"主播返回前台";
-                [sigleView showAlertViewTitle:alertContent bgView:self.view];
-            }else {
-                [self.backImage removeFromSuperview];
-            }
-            
-        }
-        
-    }
+- (void)didReceiveMessageUserBackground:(RCChatroomSignal *)model {
+    
 }
+
 /*
 #pragma mark - Navigation
 

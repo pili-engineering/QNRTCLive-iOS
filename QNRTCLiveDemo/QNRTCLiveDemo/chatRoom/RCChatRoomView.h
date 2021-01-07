@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)didReceiveMessageUserBackground:(RCChatroomSignal *)model;
 
+- (void)didReceiveIMSignalMessage:(RCTextMessage *)message;
+
 @end
 
 @interface RCChatRoomView : UIView
@@ -75,6 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property(nonatomic,strong)UIButton *praiseBtn;
 
+// 自定义事件按钮
+@property (nonatomic, strong) UIButton *closeButton;
+
 /**
  处理礼物消息
  */
@@ -107,6 +112,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)sendMessage:(RCMessageContent *)messageContent
         pushContent:(NSString *)pushContent
+            success:(void (^)(long messageId))successBlock
+              error:(void (^)(RCErrorCode nErrorCode, long messageId))errorBlock;
+
+- (void)sendMessage:(NSString *)message
+        pushContent:(NSString *)pushContent
+           targetId:(NSString *)targetId
             success:(void (^)(long messageId))successBlock
               error:(void (^)(RCErrorCode nErrorCode, long messageId))errorBlock;
 

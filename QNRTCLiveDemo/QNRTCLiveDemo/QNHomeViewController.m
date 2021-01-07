@@ -10,14 +10,18 @@
 #import "QNPersonViewController.h"
 #import "QNLiveViewController.h"
 #import "QNListViewController.h"
+#import "QNAudioRoomViewController.h"
+#import "QNRoomTypeSelectView.h"
 
 @interface QNHomeViewController ()
 <
 UITabBarControllerDelegate,
-UITabBarDelegate
+UITabBarDelegate,
+QNRoomTypeSelectViewDelegate
 >
 
 @property (nonatomic, strong) QNReachability *reachability;
+@property (nonatomic, strong) QNRoomTypeSelectView *selectTypeView;
 
 @end
 
@@ -33,6 +37,22 @@ UITabBarDelegate
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kQNReachabilityChangedNotification object:nil];
     
+    NSDictionary *defaultDic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
+    NSString *imToken = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_IM_TOKEN"];
+
+    if (imToken.length == 0) {
+        [QNNetworkRequest requestWithUrl:QN_IM_USER_TOKEN requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+            NSLog(@"home view QN_IM_USER_TOKEN resultDic --- %@", resultDic);
+            if ([resultDic.allKeys containsObject:@"token"]) {
+                [[NSUserDefaults standardUserDefaults] setObject:resultDic[@"token"] forKey:@"QN_USER_IM_TOKEN"];
+            }
+        } error:^(NSError * _Nonnull error) {
+            NSLog(@"home view QN_IM_USER_TOKEN error --- %@", error);
+            QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+            [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
+        }];
+    }
+    
     self.reachability = [QNReachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
     
@@ -47,6 +67,9 @@ UITabBarDelegate
     self.view.backgroundColor = [UIColor whiteColor];
 
     [self layoutInterfaceView];
+    
+    self.selectTypeView = [[QNRoomTypeSelectView alloc] initWithFrame:self.view.bounds];
+    self.selectTypeView.delegate = self;
 
     self.delegate = self;
 }
@@ -99,7 +122,7 @@ UITabBarDelegate
     
     UIButton *liveButton = [[UIButton alloc] init];
     [liveButton setImage:[UIImage imageNamed:@"icon_start live"] forState:UIControlStateNormal];
-    [liveButton addTarget:self action:@selector(enterLiveView) forControlEvents:UIControlEventTouchUpInside];
+    [liveButton addTarget:self action:@selector(showSelecteViewType) forControlEvents:UIControlEventTouchUpInside];
     liveButton.highlighted = NO;
     [self.view addSubview:liveButton];
     
@@ -108,7 +131,6 @@ UITabBarDelegate
         make.centerY.mas_equalTo(self.tabBar.mas_centerY).offset(-26);
         make.size.mas_equalTo(CGSizeMake(78, 78));
     }];
-    
 }
    
 - (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item {
@@ -121,8 +143,29 @@ UITabBarDelegate
 
 }
 
+# pragma mark -
+
+- (void)typeSelectView:(QNRoomTypeSelectView *)typeSelectView didSelectedIndex:(NSInteger)titleIndex {
+    switch (titleIndex) {
+        case 1:{
+            [self enterLiveView];
+        }
+            break;
+        
+        case 2:{
+            [self enterAudioRoom];
+        }
+            break;
+        default:
+            break;
+    }
+}
 
 # pragma mark - actions
+
+- (void)showSelecteViewType {
+    [self.view addSubview:_selectTypeView];
+}
 
 - (void)enterLiveView {
     // 进入直播
@@ -130,6 +173,15 @@ UITabBarDelegate
     liveViewController.hidesBottomBarWhenPushed = YES;
     liveViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:liveViewController animated:YES completion:nil];
+}
+
+- (void)enterAudioRoom {
+    // 进入语音房
+    QNAudioRoomViewController *audioRoomViewController = [[QNAudioRoomViewController alloc]init];
+    audioRoomViewController.isAdmin = YES;
+    audioRoomViewController.hidesBottomBarWhenPushed = YES;
+    audioRoomViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:audioRoomViewController animated:YES completion:nil];
 }
 
 - (void)getback {

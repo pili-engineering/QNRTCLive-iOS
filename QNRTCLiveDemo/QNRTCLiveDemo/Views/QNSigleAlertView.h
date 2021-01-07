@@ -10,4 +10,7 @@
 
 @interface QNSigleAlertView : NSObject
 - (void)showAlertViewTitle:(NSString *)title bgView:(UIView *)bgView;
+
+- (void)addAlertContent:(NSString *)content bgView:(UIView *)bgView;
+- (void)removeAlertContentView;
 @end

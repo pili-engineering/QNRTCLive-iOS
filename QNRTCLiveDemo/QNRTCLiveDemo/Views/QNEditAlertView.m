@@ -44,19 +44,19 @@ UITextFieldDelegate
         CGFloat width = CGRectGetWidth(frame);
         CGFloat height = CGRectGetHeight(frame);
         
-        CGFloat homeHeight = 165;
+        CGFloat homeHeight = 185;
         CGFloat space = 40;
         if (person) {
-            homeHeight = 205;
+            homeHeight = 225;
             space = 70;
         }
         
-        self.homeView = [[UIView alloc] initWithFrame:CGRectMake(20, height/2 - homeHeight/2 - space, width - 40, homeHeight)];
+        self.homeView = [[UIView alloc] initWithFrame:CGRectMake(40, height/2 - homeHeight/2 - space, width - 80, homeHeight)];
         self.homeView.backgroundColor = [UIColor whiteColor];
         self.homeView.layer.cornerRadius = 6;
         [self addSubview:_homeView];
         
-        _titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, width - 40, 41)];
+        _titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, width - 80, 41)];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.font = QN_FONT_REGULAR(16.0);
         _titleLabel.textColor = QN_COLOR_RGB(30, 139, 255, 1);
@@ -64,7 +64,7 @@ UITextFieldDelegate
         [self.homeView addSubview:_titleLabel];
         
         
-        _cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(20, homeHeight - 40, 86, 32)];
+        _cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(50, homeHeight - 56, 86, 32)];
         _cancelButton.titleLabel.font = QN_FONT_REGULAR(16);
         [_cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
@@ -73,7 +73,7 @@ UITextFieldDelegate
         _cancelButton.clipsToBounds = YES;
         [self.homeView addSubview:_cancelButton];
         
-        _sureButton = [[UIButton alloc] initWithFrame:CGRectMake(width - 40 - 86 - 20, homeHeight - 40, 86, 32)];
+        _sureButton = [[UIButton alloc] initWithFrame:CGRectMake(width - 80 - 86 - 50, homeHeight - 56, 86, 32)];
         _sureButton.titleLabel.font = QN_FONT_REGULAR(16);
         [_sureButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_sureButton setTitle:@"确定" forState:UIControlStateNormal];
@@ -88,13 +88,13 @@ UITextFieldDelegate
         _sureButton.tag = 101;
         [_sureButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
         
-        _nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 42, width - 40 - 30, 28)];
+        _nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 48, width - 80 - 40, 28)];
         _nameLabel.textAlignment = NSTextAlignmentLeft;
         _nameLabel.font = QN_FONT_REGULAR(14.0);
         _nameLabel.textColor = [UIColor blackColor];
         [self.homeView addSubview:_nameLabel];
         
-        _textField = [[UITextField alloc] initWithFrame:CGRectMake(20, 70, width - 40 - 30, 30)];
+        _textField = [[UITextField alloc] initWithFrame:CGRectMake(20, 80, width - 80 - 40, 30)];
         _textField.borderStyle = UITextBorderStyleNone;
         _textField.font = QN_FONT_REGULAR(14);
         _textField.textColor = [UIColor blackColor];
@@ -102,39 +102,39 @@ UITextFieldDelegate
         _textField.text = text;
         [self.homeView addSubview:_textField];
 
-        UIView *lineTwoView = [[UIView alloc] initWithFrame:CGRectMake(20, 100, width - 40 - 40, 0.8)];
+        UIView *lineTwoView = [[UIView alloc] initWithFrame:CGRectMake(20, 110, width - 80 - 40, 0.8)];
         lineTwoView.backgroundColor = QN_COLOR_RGB(151, 151, 151, 1);
         [self.homeView addSubview:lineTwoView];
         
         if (person) {
             _nameLabel.text = @"请输入昵称";
             
-            _genderLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 112, 60, 28)];
+            _genderLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 122, 60, 28)];
             _genderLabel.textAlignment = NSTextAlignmentLeft;
             _genderLabel.font = QN_FONT_REGULAR(14.0);
             _genderLabel.textColor = [UIColor blackColor];
             _genderLabel.text = @"性别";
             [self.homeView addSubview:_genderLabel];
             
-            _maleButton = [[UIButton alloc] initWithFrame:CGRectMake(85, 110, 32, 32)];
+            _maleButton = [[UIButton alloc] initWithFrame:CGRectMake(85, 120, 32, 32)];
             [_maleButton setImage:[UIImage imageNamed:@"icon_Set switch_nor"] forState:UIControlStateNormal];
             [_maleButton setImage:[UIImage imageNamed:@"icon_Set switch_sel"] forState:UIControlStateSelected];
             [self.homeView addSubview:_maleButton];
             
-            UILabel *maleLabel = [[UILabel alloc] initWithFrame:CGRectMake(117, 112, 28, 28)];
+            UILabel *maleLabel = [[UILabel alloc] initWithFrame:CGRectMake(117, 122, 28, 28)];
             maleLabel.textAlignment = NSTextAlignmentCenter;
             maleLabel.font = QN_FONT_REGULAR(14.0);
             maleLabel.textColor = [UIColor blackColor];
             maleLabel.text = @"男";
             [self.homeView addSubview:maleLabel];
             
-            _femaleButton = [[UIButton alloc] initWithFrame:CGRectMake(178, 110, 32, 32)];
+            _femaleButton = [[UIButton alloc] initWithFrame:CGRectMake(178, 120, 32, 32)];
             [_femaleButton setImage:[UIImage imageNamed:@"icon_Set switch_nor"] forState:UIControlStateNormal];
             [_femaleButton setImage:[UIImage imageNamed:@"icon_Set switch_sel"] forState:UIControlStateSelected];
 
             [self.homeView addSubview:_femaleButton];
             
-            UILabel *femaleLabel = [[UILabel alloc] initWithFrame:CGRectMake(210, 112, 28, 28)];
+            UILabel *femaleLabel = [[UILabel alloc] initWithFrame:CGRectMake(210, 122, 28, 28)];
             femaleLabel.textAlignment = NSTextAlignmentCenter;
             femaleLabel.font = QN_FONT_REGULAR(14.0);
             femaleLabel.textColor = [UIColor blackColor];

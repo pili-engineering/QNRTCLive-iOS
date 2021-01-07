@@ -143,6 +143,7 @@ alpha:1.0]
         [_textLabel setTextAlignment: NSTextAlignmentLeft];
         [_textLabel setTintColor:[UIColor whiteColor]];
         [_textLabel setNumberOfLines:0];
+        [_textLabel setFont:[UIFont systemFontOfSize:15]];
     }
     return _textLabel;
 }

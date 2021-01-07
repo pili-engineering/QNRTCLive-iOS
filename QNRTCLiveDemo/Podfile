@@ -8,16 +8,16 @@ target 'QNRTCLiveDemo' do
   # Pods for QNRTCLiveDemo
 
   pod 'QNRTCKit', '3.0.0'
-  pod 'Masonry', '1.0.2'
+  pod 'Masonry', '1.1.0'
   pod 'PLPlayerKit','3.4.3'
   pod 'RongCloudIM/IMKit','2.10.4'
-  pod 'jetfire'
   pod 'MJRefresh'
   pod 'Qiniu', '7.4.4'
+  pod 'SDWebImage', '~> 5.0'
 
   target 'QNRTCLiveDemoTests' do
     inherit! :search_paths
-    # Pods for testing
+    # Pods for testing/Users/fengwenxiu
   end
 
 end

@@ -119,7 +119,8 @@ UITableViewDataSource
             [cell.pkButton addTarget:self action:@selector(pkAction:) forControlEvents:UIControlEventTouchUpInside];
         }
     } else{
-        [cell setUser:_listArray[indexPath.row] state:self.state];
+        NSDictionary *dic = _listArray[indexPath.row];
+        [cell setUser:dic[@"nickname"] state:self.state];
     }
     return cell;
 }

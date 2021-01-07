@@ -51,7 +51,7 @@
     _userId = userId;
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.nameLabel.text = userId;
+//        self.nameLabel.text = userId;
     });
 }
 

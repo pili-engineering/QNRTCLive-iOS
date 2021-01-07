@@ -12,6 +12,7 @@
 #import "QNAppDelegate.h"
 #import "QNLoginViewController.h"
 #import "QNFeedbackViewController.h"
+#import "RCCRRongCloudIMManager.h"
 
 static NSString *cellIdentifier = @"MyTableViewCell";
 
@@ -81,8 +82,10 @@ QNEditAlertViewDelegate
         make.size.mas_equalTo(CGSizeMake(104, 104));
     }];
     
-    int value = arc4random() % 5;
-    _userHeaderView.image = [UIImage imageNamed:[NSString stringWithFormat:@"img_avater_%d.png", value]];
+    _userHeaderView.image = [UIImage imageNamed:[NSString stringWithFormat:@"icon_default_avator.png"]];
+    if (self.defaultDic[@"avatar"] && [self.defaultDic[@"avatar"] length] != 0) {
+        [_userHeaderView sd_setImageWithURL:[NSURL URLWithString:self.defaultDic[@"avatar"]]];
+    }
     
     _userLabel = [[UILabel alloc] init];
     _userLabel.font = QN_FONT_REGULAR(16);
@@ -169,32 +172,13 @@ QNEditAlertViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     dispatch_async(dispatch_get_main_queue(), ^(void){
         if (indexPath.section == 1 && indexPath.row == 0) {
-            NSDictionary *dic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
-
-            [QNNetworkRequest requestWithUrl:QN_USER_EXIT requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", dic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
-                NSLog(@"QN_USER_EXIT resultDic --- %@", resultDic);
-                if (resultDic.count == 0) {
-                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"QN_USER_INFOMATION"];
-                    QNAppDelegate *appdelegate = (QNAppDelegate *)[UIApplication sharedApplication].delegate;
-                    if ([appdelegate.window.rootViewController isKindOfClass:[QNLoginViewController class]] == YES) {
-                        [self dismissViewControllerAnimated:YES completion:nil];
-                    } else {
-                        QNLoginViewController *loginViewController = [[QNLoginViewController alloc] init];
-                        loginViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-                        [self presentViewController:loginViewController animated:YES completion:nil];
-                    }
-                }
-            } error:^(NSError * _Nonnull error) {
-                NSLog(@"QN_USER_EXIT error --- %@", error);
-                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
-                [sigleView showAlertViewTitle:[NSString stringWithFormat:@"用户注销失败 %ld", (long)error.code] bgView:self.view];
-
-            }];
+            [self presentViewForSelectLogout];
         } else if (indexPath.section == 0) {
             if (indexPath.row == 0) {
-                NSURL *url = [NSURL URLWithString:@"https://doc.qnsdk.com/rtn"];
+                NSURL *url = [NSURL URLWithString:@"https://www.qiniu.com/products/rtn"];
                 QNWebViewController *webViewController = [[QNWebViewController alloc] init];
                 webViewController.url = url;
+                webViewController.titleName = @"七牛实时音视频";
                 webViewController.modalPresentationStyle = UIModalPresentationFullScreen;
                 [self presentViewController:webViewController animated:YES completion:nil];
             } else if (indexPath.row == 1) {
@@ -202,6 +186,7 @@ QNEditAlertViewDelegate
                 NSURL *url = [NSURL fileURLWithPath:filePath];
                 QNWebViewController *webViewController = [[QNWebViewController alloc] init];
                 webViewController.url = url;
+                webViewController.titleName = @"用户协议";
                 webViewController.modalPresentationStyle = UIModalPresentationFullScreen;
                 [self presentViewController:webViewController animated:YES completion:nil];
             } else if (indexPath.row == 2) {
@@ -266,6 +251,40 @@ QNEditAlertViewDelegate
     }
 }
 
+- (void)presentViewForSelectLogout {
+    UIAlertController *controller = [UIAlertController alertControllerWithTitle:@"确认" message:@"确认退出登录" preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    }];
+    UIAlertAction *sureAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSDictionary *dic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
+            [QNNetworkRequest requestWithUrl:QN_USER_EXIT requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", dic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+                NSLog(@"QN_USER_EXIT resultDic --- %@", resultDic);
+                if (resultDic.count == 0) {
+                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"QN_USER_INFOMATION"];
+                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"QN_USER_IM_TOKEN"];
+                    [[RCCRRongCloudIMManager sharedRCCRRongCloudIMManager] logoutRongCloud];
+                    QNAppDelegate *appdelegate = (QNAppDelegate *)[UIApplication sharedApplication].delegate;
+                    if ([appdelegate.window.rootViewController isKindOfClass:[QNLoginViewController class]] == YES) {
+                        [self dismissViewControllerAnimated:YES completion:nil];
+                    } else {
+                        QNLoginViewController *loginViewController = [[QNLoginViewController alloc] init];
+                        loginViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+                        [self presentViewController:loginViewController animated:YES completion:nil];
+                    }
+                }
+            } error:^(NSError * _Nonnull error) {
+                NSLog(@"QN_USER_EXIT error --- %@", error);
+                QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+                [sigleView showAlertViewTitle:[NSString stringWithFormat:@"用户注销失败 %ld", (long)error.code] bgView:self.view];
+            }];
+        });
+    }];
+    [controller addAction:cancelAction];
+    [controller addAction:sureAction];
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
 # pragma mark - actions
 
 - (void)changeNickName:(UIButton *)button {
@@ -284,6 +303,25 @@ QNEditAlertViewDelegate
     [[NSUserDefaults standardUserDefaults] setObject:resultDic forKey:@"QN_USER_INFOMATION"];
     self.defaultDic = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_INFOMATION"];
     _userLabel.text = self.defaultDic[@"nickname"];
+    if (self.defaultDic[@"avatar"] && [self.defaultDic[@"avatar"] length] != 0) {
+        [_userHeaderView sd_setImageWithURL:[NSURL URLWithString:self.defaultDic[@"avatar"]]];
+    } else {
+        _userHeaderView.image = [UIImage imageNamed:[NSString stringWithFormat:@"icon_default_avator.png"]];
+    }
+    
+    NSString *imToken = [[NSUserDefaults standardUserDefaults] objectForKey:@"QN_USER_IM_TOKEN"];
+    if (imToken.length == 0) {
+        [QNNetworkRequest requestWithUrl:QN_IM_USER_TOKEN requestType:QNRequestTypePost dic:nil header:[NSString stringWithFormat:@"Bearer %@", self.defaultDic[@"token"]] success:^(NSDictionary * _Nonnull resultDic) {
+            NSLog(@"person view QN_IM_USER_TOKEN resultDic --- %@", resultDic);
+            if ([resultDic.allKeys containsObject:@"token"]) {
+                [[NSUserDefaults standardUserDefaults] setObject:resultDic[@"token"] forKey:@"QN_USER_IM_TOKEN"];
+            }
+        } error:^(NSError * _Nonnull error) {
+            NSLog(@"person view QN_IM_USER_TOKEN error --- %@", error);
+            QNSigleAlertView *sigleView = [[QNSigleAlertView alloc]init];
+            [sigleView showAlertViewTitle:[NSString stringWithFormat:@"获取 IM token 失败 %ld", (long)error.code] bgView:self.view];
+        }];
+    }
 }
 
 /*
