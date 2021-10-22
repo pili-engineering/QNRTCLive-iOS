@@ -851,7 +851,7 @@ RCChatRoomViewDelegate
     NSString *rootPath = [[NSBundle mainBundle] resourcePath];
     PLSEffectConfiguration *effectConfiguration = [PLSEffectConfiguration new];
     effectConfiguration.modelFileDirPath = [NSString pathWithComponents:@[rootPath, @"ModelResource.bundle"]];
-    effectConfiguration.licenseFilePath = [NSString pathWithComponents:@[rootPath, @"LicenseBag.bundle", @"qiniu_20200908_20210908_com.qbox.QNRTCLiveDemo_v3.9.0.licbag"]];
+    effectConfiguration.licenseFilePath = [NSString pathWithComponents:@[rootPath, @"LicenseBag.bundle", @"qiniu_20210310_20221011_com.qbox.QNRTCLiveDemo_3.9.0.licbag"]];
     _effectDataManager = [[PLSEffectDataManager alloc] initWithRootPath:rootPath];
     
     self.effectManager = [PLSEffectManager sharedWith:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] configuration:effectConfiguration];
