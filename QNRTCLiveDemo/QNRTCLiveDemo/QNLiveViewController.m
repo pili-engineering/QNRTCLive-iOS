@@ -668,10 +668,12 @@ RCChatRoomViewDelegate
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"didLeaveOfRemoteUserId: %@", userId);
         [self hideAllUIView];
-        if (self.isAdmin) {
-            [self endPK:self.roomId];
-        } else{
-            [self endPK:self.pkRoomId];
+        if (self.liveState == 2) {
+            if (self.isAdmin) {
+                [self endPK:self.roomId];
+            } else{
+                [self endPK:self.pkRoomId];
+            }
         }
     });
 }
@@ -1812,65 +1814,69 @@ RCChatRoomViewDelegate
     
     if ([type isEqualToString:@"end-pk-res"]) {
         NSLog(@"didReceiveEndPKResponse - dic %@", dic);
-        self.liveState = 1;
-        if (self.isAdmin) {
-            NSLog(@"didReceiveEndPKResponse - self.isAdmin");
-            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
-            for (NSDictionary *dic in array) {
-                if (![dic.allValues containsObject:self.userId]) {
-                    [self.nickNameArray removeObject:dic];
+        if (self.liveState == 2) {
+            self.liveState = 1;
+            if (self.isAdmin) {
+                NSLog(@"didReceiveEndPKResponse - self.isAdmin");
+                NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+                for (NSDictionary *dic in array) {
+                    if (![dic.allValues containsObject:self.userId]) {
+                        [self.nickNameArray removeObject:dic];
+                    }
                 }
-            }
 
-            [self.engine stopMergeStreamWithJobId:self.roomId delayMillisecond:QN_DELAY_MS];
-            self.serialNum++;
-            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
-            self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
-            self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
-            self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];
-            [self.engine createForwardJobWithConfiguration:self.forwardConfig];
-        } else{
-            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
-            for (NSDictionary *dic in array) {
-                if (![dic.allValues containsObject:self.pkUserId]) {
-                    [self.nickNameArray removeObject:dic];
+                [self.engine stopMergeStreamWithJobId:self.roomId delayMillisecond:QN_DELAY_MS];
+                self.serialNum++;
+                self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
+                self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
+                self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
+                self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];
+                [self.engine createForwardJobWithConfiguration:self.forwardConfig];
+            } else{
+                NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+                for (NSDictionary *dic in array) {
+                    if (![dic.allValues containsObject:self.pkUserId]) {
+                        [self.nickNameArray removeObject:dic];
+                    }
                 }
+                [self.engine stopMergeStreamWithJobId:self.roomId];
+                [self.engine leaveRoom];
+                [self refreshJoinRoom];
             }
-            [self.engine stopMergeStreamWithJobId:self.roomId];
-            [self.engine leaveRoom];
-            [self refreshJoinRoom];
         }
     }
     
     if ([type isEqualToString:@"on-pk-end"]) {
         NSLog(@"didReceiveOnPKEnd - dic %@", dic);
-        self.liveState = 1;
-        if (self.isAdmin) {
-            NSLog(@"didReceiveOnPKEnd - self.isAdmin");
-            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
-            for (NSDictionary *dic in array) {
-                if (![dic.allValues containsObject:self.userId]) {
-                    [self.nickNameArray removeObject:dic];
+        if (self.liveState == 2) {
+            self.liveState = 1;
+            if (self.isAdmin) {
+                NSLog(@"didReceiveOnPKEnd - self.isAdmin");
+                NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+                for (NSDictionary *dic in array) {
+                    if (![dic.allValues containsObject:self.userId]) {
+                        [self.nickNameArray removeObject:dic];
+                    }
                 }
-            }
 
-            [self.engine stopMergeStreamWithJobId:self.roomId delayMillisecond:QN_DELAY_MS];
-            self.serialNum++;
-            self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
-            self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
-            self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
-            self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];;
-            [self.engine createForwardJobWithConfiguration:self.forwardConfig];
-        } else{
-            NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
-            for (NSDictionary *dic in array) {
-                if (![dic.allValues containsObject:self.pkUserId]) {
-                    [self.nickNameArray removeObject:dic];
+                [self.engine stopMergeStreamWithJobId:self.roomId delayMillisecond:QN_DELAY_MS];
+                self.serialNum++;
+                self.forwardConfig.publishUrl = [NSString stringWithFormat:@"rtmp://pili-publish.qnsdk.com/sdk-live/%@?serialnum=%@", self.userId, @(self.serialNum)];
+                self.forwardConfig.audioTrackInfo = self.audioTrackInfo;
+                self.forwardConfig.videoTrackInfo = self.cameraTrackInfo;
+                self.forwardConfig.jobId = [NSString stringWithFormat:@"forward-%@", self.userId];;
+                [self.engine createForwardJobWithConfiguration:self.forwardConfig];
+            } else{
+                NSArray *array = [NSArray arrayWithArray:self.nickNameArray];
+                for (NSDictionary *dic in array) {
+                    if (![dic.allValues containsObject:self.pkUserId]) {
+                        [self.nickNameArray removeObject:dic];
+                    }
                 }
+                [self.engine stopMergeStreamWithJobId:self.roomId];
+                [self.engine leaveRoom];
+                [self refreshJoinRoom];
             }
-            [self.engine stopMergeStreamWithJobId:self.roomId];
-            [self.engine leaveRoom];
-            [self refreshJoinRoom];
         }
     }
     
